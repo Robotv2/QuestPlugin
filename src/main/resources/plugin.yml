@@ -1,0 +1,3 @@
+name: QuestPlugin
+version: '${project.version}'
+main: fr.robotv2.questplugin.QuestPlugin
