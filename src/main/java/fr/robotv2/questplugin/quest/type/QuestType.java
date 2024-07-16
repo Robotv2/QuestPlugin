@@ -1,19 +1,20 @@
 package fr.robotv2.questplugin.quest.type;
 
-import org.bukkit.Material;
+import com.cryptomorin.xseries.XMaterial;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class QuestType<T> {
 
     public static final Map<String, QuestType<?>> TYPES = new HashMap<>();
 
-    public static final QuestType<Material> BREAK_TYPE = registerType(new QuestType<>("BLOCK", Material.class));
+    public static final QuestType<XMaterial> BREAK_TYPE = registerType(new QuestType<>("BLOCK", XMaterial.class));
 
-    public static final QuestType<Material> PLACE_TYPE = registerType(new QuestType<>("PLACE", Material.class));
+    public static final QuestType<XMaterial> PLACE_TYPE = registerType(new QuestType<>("PLACE", XMaterial.class));
 
     @Contract("_ -> _;")
     public static <T> QuestType<T> registerType(QuestType<T> type) {
@@ -52,5 +53,27 @@ public class QuestType<T> {
 
     public boolean isNumerical() {
         return numerical;
+    }
+
+    @Override
+    public String toString() {
+        return "QuestType{" +
+                "literal='" + literal + '\'' +
+                ", tClass=" + tClass +
+                ", numerical=" + numerical +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof QuestType)) return false;
+        QuestType<?> questType = (QuestType<?>) o;
+        return Objects.equals(literal, questType.literal);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(literal);
     }
 }

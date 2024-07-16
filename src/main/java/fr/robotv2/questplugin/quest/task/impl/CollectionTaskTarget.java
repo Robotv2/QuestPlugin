@@ -14,9 +14,7 @@ import java.util.stream.Collectors;
 public class CollectionTaskTarget<T> extends TaskTarget<T> {
 
     static {
-        TaskTargets.registerResolver(String.class, (task) -> {
-            return new CollectionTaskTarget<>(task, String.class, (string) -> string, Collectors.toCollection(HashSet::new));
-        });
+        TaskTargets.registerResolver(String.class, (task) -> new CollectionTaskTarget<>(task, String.class, (string) -> string, Collectors.toCollection(HashSet::new)));
     }
 
     private final Collection<T> target;
@@ -24,10 +22,9 @@ public class CollectionTaskTarget<T> extends TaskTarget<T> {
 
     public CollectionTaskTarget(Task task, Class<T> tClass, Function<String, T> stringTFunction, Collector<T, ?, Collection<T>> collector) {
         super(task, tClass);
-
         final List<String> targets = task.getTaskSection().getStringList("required_targets");
         this.matchAll = targets.contains("*");
-        this.target = targets.stream().map(stringTFunction).collect(collector);
+        this.target = targets.stream().filter((string) -> !string.equals("*")).map(stringTFunction).collect(collector);
     }
 
     @Override

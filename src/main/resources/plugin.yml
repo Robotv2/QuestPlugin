@@ -1,3 +1,4 @@
 name: QuestPlugin
 version: '${project.version}'
 main: fr.robotv2.questplugin.QuestPlugin
+api-version: "1.13"

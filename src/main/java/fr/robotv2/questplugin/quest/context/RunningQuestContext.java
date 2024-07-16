@@ -1,5 +1,7 @@
 package fr.robotv2.questplugin.quest.context;
 
+import com.cryptomorin.xseries.XTag;
+import fr.robotv2.questplugin.quest.type.QuestType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +13,7 @@ public abstract class RunningQuestContext<T, E extends Event> {
     private final Player initiator;
 
     @NotNull
-    private final String type;
+    private final QuestType<?> type;
 
     @Nullable
     private final E triggered;
@@ -22,11 +24,11 @@ public abstract class RunningQuestContext<T, E extends Event> {
     @NotNull
     private final Number amount;
 
-    protected RunningQuestContext(@NotNull Player initiator, @NotNull String type, @Nullable E triggered, @Nullable T target) {
+    protected RunningQuestContext(@NotNull Player initiator, @NotNull QuestType<?> type, @Nullable E triggered, @Nullable T target) {
         this(initiator, type, triggered, target, 1);
     }
 
-    protected RunningQuestContext(@NotNull Player initiator, @NotNull String type, @Nullable E triggered, @Nullable T target, @NotNull Number amount) {
+    protected RunningQuestContext(@NotNull Player initiator, @NotNull QuestType<?> type, @Nullable E triggered, @Nullable T target, @NotNull Number amount) {
         this.initiator = initiator;
         this.type = type;
         this.triggered = triggered;
@@ -38,7 +40,7 @@ public abstract class RunningQuestContext<T, E extends Event> {
         return initiator;
     }
 
-    public @NotNull String getType() {
+    public @NotNull QuestType<?> getType() {
         return type;
     }
 
