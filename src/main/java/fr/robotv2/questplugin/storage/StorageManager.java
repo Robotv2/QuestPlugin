@@ -13,6 +13,8 @@ public interface StorageManager<ID, T extends Identifiable<ID>> {
 
     void update(ID id, T value);
 
+    void upsert(T value);
+
     void remove(T value);
 
     void removeFromId(ID id);

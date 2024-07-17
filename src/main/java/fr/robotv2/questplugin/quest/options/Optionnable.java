@@ -12,7 +12,6 @@ public interface Optionnable {
         Map<Option, Boolean> defaultMap = new EnumMap<>(Option.class);
         defaultMap.put(Option.DEPENDANT_TASK, Boolean.FALSE);
         defaultMap.put(Option.GLOBAL, Boolean.FALSE);
-        defaultMap.put(Option.REDEEMABLE, Boolean.FALSE);
         defaultMap.put(Option.NEED_STARTING, Boolean.FALSE);
         return Collections.unmodifiableMap(defaultMap);
     }
@@ -28,10 +27,10 @@ public interface Optionnable {
     }
 
     enum Option {
-        DEPENDANT_TASK,
-        GLOBAL,
-        REDEEMABLE,
-        NEED_STARTING;
+        DEPENDANT_TASK, // group & individual
+        GLOBAL, // group only
+        NEED_STARTING, // group & individual
+        ;
     }
 
     /**

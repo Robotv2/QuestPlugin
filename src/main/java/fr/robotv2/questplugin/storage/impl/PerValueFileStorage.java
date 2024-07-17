@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PerValueFileStorage<ID, T extends Identifiable<ID>> implements StorageManager<ID, T> {
 
-    private final Map<ID, T> valueCache = new ConcurrentHashMap<>();
     private final Map<ID, File> fileCache = new ConcurrentHashMap<>();
 
     private final File folder;
@@ -44,15 +43,13 @@ public class PerValueFileStorage<ID, T extends Identifiable<ID>> implements Stor
 
     @Override
     public Optional<T> select(ID id) {
-        return Optional.ofNullable(valueCache.computeIfAbsent(id, k -> {
-            try {
-                return fromFile(getFileFor(id), tClass);
-            } catch (FileNotFoundException fileNotFoundException) {
-                return null;
-            } catch (IOException exception) {
-                throw new RuntimeException("Failed to load data with id " + id, exception);
-            }
-        }));
+        try {
+            return Optional.ofNullable(fromFile(getFileFor(id), tClass));
+        } catch (FileNotFoundException fileNotFoundException) {
+            return Optional.empty();
+        } catch (IOException exception) {
+            throw new RuntimeException("Failed to load data with id " + id, exception);
+        }
     }
 
     @Override
@@ -70,7 +67,6 @@ public class PerValueFileStorage<ID, T extends Identifiable<ID>> implements Stor
                 final T value = fromFile(file, tClass);
                 if (value != null) {
                     allValues.add(value);
-                    valueCache.put(value.getId(), value);
                     fileCache.put(value.getId(), file);
                 }
             } catch (IOException exception) {
@@ -85,7 +81,6 @@ public class PerValueFileStorage<ID, T extends Identifiable<ID>> implements Stor
     public void insert(T value) {
         try {
             writeToFile(getFileFor(value.getId()), value);
-            valueCache.put(value.getId(), value);
         } catch (IOException exception) {
             throw new RuntimeException("An error occurred while inserting value with id " + value.getId(), exception);
         }
@@ -93,6 +88,11 @@ public class PerValueFileStorage<ID, T extends Identifiable<ID>> implements Stor
 
     @Override
     public void update(ID id, T value) {
+        insert(value);
+    }
+
+    @Override
+    public void upsert(T value) {
         insert(value);
     }
 
@@ -109,13 +109,11 @@ public class PerValueFileStorage<ID, T extends Identifiable<ID>> implements Stor
             QuestPlugin.logger().warning("Failed to delete file: " + file.getAbsolutePath());
         }
 
-        valueCache.remove(id);
         fileCache.remove(id);
     }
 
     @Override
     public void close() {
-        valueCache.clear();
         fileCache.clear();
     }
 

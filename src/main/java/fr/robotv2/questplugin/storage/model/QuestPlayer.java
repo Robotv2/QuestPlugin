@@ -1,6 +1,8 @@
 package fr.robotv2.questplugin.storage.model;
 
 import fr.robotv2.questplugin.group.QuestGroup;
+import fr.robotv2.questplugin.storage.Identifiable;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collection;
@@ -11,7 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class QuestPlayer implements java.io.Serializable {
+public class QuestPlayer implements java.io.Serializable, Identifiable<UUID> {
 
     private UUID playerUniqueId;
 
@@ -19,13 +21,18 @@ public class QuestPlayer implements java.io.Serializable {
 
     private HashSet<ActiveQuest> activeQuests;
 
+    public QuestPlayer(Player player) {
+        this(player.getUniqueId(), player.getName(), new HashSet<>());
+    }
+
     public QuestPlayer(UUID uniqueId, String playerName, HashSet<ActiveQuest> sets) {
         this.playerUniqueId = uniqueId;
         this.playerName = playerName;
         this.activeQuests = sets;
     }
 
-    public UUID getPlayerUniqueId() {
+    @Override
+    public UUID getId() {
         return playerUniqueId;
     }
 
