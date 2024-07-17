@@ -14,7 +14,7 @@ public class Task {
     private final ConfigurationSection section;
 
     private final QuestType<?> type;
-    private final int requiredAmount;
+    private final double requiredAmount;
     private final List<String> rewards;
 
     private final transient TaskTarget<?> target;
@@ -24,7 +24,7 @@ public class Task {
         this.id = section.getName();
         this.section = section;
         this.type = Objects.requireNonNull(QuestType.getByLiteral(section.getString("task_type")), "Invalid task type.");
-        this.requiredAmount = this.type.isNumerical() ? section.getInt("required_amount") : 1;
+        this.requiredAmount = this.type.isNumerical() ? section.getDouble("required_amount") : 1D;
         this.rewards = section.getStringList("task_rewards");
         this.target = TaskTargets.resolve(this);
     }
@@ -41,7 +41,7 @@ public class Task {
         return section;
     }
 
-    public int getRequiredAmount() {
+    public double getRequiredAmount() {
         return requiredAmount;
     }
 

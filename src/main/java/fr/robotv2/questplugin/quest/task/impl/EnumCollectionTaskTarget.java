@@ -14,17 +14,11 @@ import java.util.stream.Collectors;
 
 public class EnumCollectionTaskTarget<T extends Enum<T>> extends CollectionTaskTarget<T> {
 
-    static {
-        TaskTargets.registerResolver(XMaterial.class, (task) -> new EnumCollectionTaskTarget<>(task, XMaterial.class, XMaterialUtil::matchMaterialOrThrow));
-        TaskTargets.registerResolver(Material.class, (task) -> new EnumCollectionTaskTarget<>(task, Material.class));
-        TaskTargets.registerResolver(EntityType.class, (task) -> new EnumCollectionTaskTarget<>(task, EntityType.class));
-    }
-
-    protected EnumCollectionTaskTarget(Task task, Class<T> tClass) {
+    public EnumCollectionTaskTarget(Task task, Class<T> tClass) {
         this(task, tClass, (target) -> Enum.valueOf(tClass, target));
     }
 
-    protected EnumCollectionTaskTarget(Task task, Class<T> tClass, Function<String, T> stringTFunction) {
+    public EnumCollectionTaskTarget(Task task, Class<T> tClass, Function<String, T> stringTFunction) {
         super(task, tClass, stringTFunction, Collectors.toCollection(() -> EnumSet.noneOf(tClass)));
     }
 }

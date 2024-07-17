@@ -1,5 +1,7 @@
 package fr.robotv2.questplugin.quest;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.storage.model.QuestPlayer;
@@ -11,13 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.SplittableRandom;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class QuestManager {
@@ -26,16 +23,16 @@ public class QuestManager {
 
     private final QuestPlugin plugin;
     private final File questFolder;
-    private final Map<String, Quest> quests;
+    private final Table<String, String, Quest> quests;
 
     public QuestManager(QuestPlugin plugin, File questFolder) {
         this.plugin = plugin;
         this.questFolder = questFolder;
-        this.quests = new HashMap<>();
+        this.quests = HashBasedTable.create();
     }
 
-    public Quest fromId(@NotNull String id) {
-        return quests.get(id);
+    public Quest fromId(@NotNull String id, @NotNull String groupId) {
+        return quests.get(id, groupId);
     }
 
     public void clearQuests() {
@@ -49,9 +46,7 @@ public class QuestManager {
 
     @UnmodifiableView
     public List<Quest> getQuests(QuestGroup group) {
-        return getQuests().stream()
-                .filter(quest -> Objects.equals(group, quest.getQuestGroup()))
-                .collect(Collectors.toList());
+        return Collections.unmodifiableList(new ArrayList<>(quests.column(group.getGroupId()).values()));
     }
 
     @Nullable
@@ -67,21 +62,26 @@ public class QuestManager {
         return quests.get(QUEST_RANDOM.nextInt(size));
     }
 
-    @Nullable
-    public Quest getRandomQuestFor(QuestPlayer questPlayer, QuestGroup group) {
+    public Set<Quest> getNRandomQuests(QuestGroup group, int n) {
 
-        if(questPlayer.getActiveQuests(group).size() >= getQuests(group).size()) {
-            return null;
+        final List<Quest> quests = this.getQuests(group);
+        final int size = quests.size();
+        final Set<Quest> randomQuests = new HashSet<>();
+
+        if (quests.isEmpty() || n <= 0) {
+            return randomQuests;
         }
 
-        Quest quest = null;
+        n = Math.min(n, size);
 
-        while (quest == null || questPlayer.hasQuest(quest.getQuestId())) {
-            quest = getRandomQuest(group);
-            if(quest == null) break; // no quest for this reset id.
+        while (randomQuests.size() < n) {
+            Quest randomQuest = getRandomQuest(group);
+            if (randomQuest != null) {
+                randomQuests.add(randomQuest);
+            }
         }
 
-        return quest;
+        return randomQuests;
     }
 
     public void loadQuests() {
@@ -106,7 +106,7 @@ public class QuestManager {
     private void loadQuest(String questId, @NotNull ConfigurationSection section) {
         try {
             final Quest quest = new Quest(plugin, questId, section);
-            quests.put(quest.getQuestId(), quest);
+            quests.put(quest.getQuestId(), quest.getQuestGroup().getGroupId(), quest);
             this.plugin.getLogger().info(questId + " has been loaded successfully.");
         } catch (Exception exception) {
             plugin.getLogger().warning(" ");

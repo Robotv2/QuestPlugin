@@ -1,5 +1,6 @@
 package fr.robotv2.questplugin.quest.context.block;
 
+import com.cryptomorin.xseries.XMaterial;
 import fr.robotv2.questplugin.quest.context.RunningQuestContext;
 import fr.robotv2.questplugin.quest.type.QuestType;
 import org.bukkit.block.Block;
@@ -10,15 +11,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class BlockContext<E extends BlockEvent> extends RunningQuestContext<Block, E> {
+public class BlockContext<E extends BlockEvent> extends RunningQuestContext<XMaterial, E> {
+
+    private final Block block;
 
     public BlockContext(@NotNull Player initiator, @NotNull QuestType<?> type, @NotNull E triggered, @NotNull Block target) {
-        super(initiator, type, triggered, target);
+        super(initiator, type, triggered, XMaterial.matchXMaterial(target.getType()));
         Objects.requireNonNull(triggered);
-        Objects.requireNonNull(target);
+        this.block = Objects.requireNonNull(target);
     }
 
     public Block getBlock() {
-        return getTarget();
+        return block;
     }
 }

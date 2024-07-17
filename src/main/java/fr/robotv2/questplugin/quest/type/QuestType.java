@@ -1,6 +1,7 @@
 package fr.robotv2.questplugin.quest.type;
 
 import com.cryptomorin.xseries.XMaterial;
+import fr.robotv2.questplugin.QuestPlugin;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,7 +13,7 @@ public class QuestType<T> {
 
     public static final Map<String, QuestType<?>> TYPES = new HashMap<>();
 
-    public static final QuestType<XMaterial> BREAK_TYPE = registerType(new QuestType<>("BLOCK", XMaterial.class));
+    public static final QuestType<XMaterial> BREAK_TYPE = registerType(new QuestType<>("BREAK", XMaterial.class));
 
     public static final QuestType<XMaterial> PLACE_TYPE = registerType(new QuestType<>("PLACE", XMaterial.class));
 
@@ -53,15 +54,6 @@ public class QuestType<T> {
 
     public boolean isNumerical() {
         return numerical;
-    }
-
-    @Override
-    public String toString() {
-        return "QuestType{" +
-                "literal='" + literal + '\'' +
-                ", tClass=" + tClass +
-                ", numerical=" + numerical +
-                '}';
     }
 
     @Override

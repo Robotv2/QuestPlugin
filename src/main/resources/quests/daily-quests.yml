@@ -1,0 +1,19 @@
+quests:
+  breakBlock1:
+    name: "&e&lBreak Block - 1"
+    group: "daily"
+    tasks:
+      1:
+        task_type: "BREAK"
+        required_amount: 10
+        required_targets:
+          - STONE
+          - COBBLESTONE
+        task_rewards:
+          - "broadcast The player %player% just finished one task !"
+      2:
+        task_type: "BREAK"
+        required_amount: 64
+        required_targets:
+          - COAL_ORE
+          - DEEPSLATE_COAL_ORE
