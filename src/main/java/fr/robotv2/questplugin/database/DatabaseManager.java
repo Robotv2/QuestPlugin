@@ -1,6 +1,7 @@
 package fr.robotv2.questplugin.database;
 
 import fr.robotv2.questplugin.QuestPlugin;
+import fr.robotv2.questplugin.database.loader.impl.MonoPlayerLoader;
 import fr.robotv2.questplugin.storage.CompletableStorageManager;
 import fr.robotv2.questplugin.storage.impl.PerValueFileStorage;
 import fr.robotv2.questplugin.storage.model.QuestPlayer;
@@ -32,31 +33,39 @@ public class DatabaseManager {
         plugin.getLogger().info("Initiating data storage with type: " + type.name());
         this.storage = CompletableStorageManager.wrap(new PerValueFileStorage<>(new File(plugin.getDataFolder(), "players"), QuestPlayer.class));
         plugin.getLogger().info("Done initiating data storage.");
+
+        // registering player loaded
+        plugin.getServer().getPluginManager().registerEvents(new MonoPlayerLoader(this), plugin);
     }
 
-    public void load(Player player) {
-        storage.select(player.getUniqueId()).thenAccept((optional) -> {
-            cache.put(player.getUniqueId(), optional.orElse(new QuestPlayer(player)));
+    public CompletableFuture<QuestPlayer> fetchAndCache(Player player) {
+        return storage.select(player.getUniqueId()).thenApply((optional) -> {
+            final QuestPlayer questPlayer = optional.orElse(new QuestPlayer(player));
+            cache.put(player.getUniqueId(), questPlayer);
+            return questPlayer;
+        }).exceptionally((throwable) -> {
+            plugin.getLogger().log(Level.SEVERE, "An error occurred while loading player: '" + player.getName() + "'", throwable);
+            return null;
         });
     }
 
-    public CompletableFuture<Void> unloadAndSave(Player player) {
-        final QuestPlayer questPlayer = getQuestPlayer(player);
+    public CompletableFuture<Void> saveAndUnload(Player player) {
+        final QuestPlayer questPlayer = getCachedQuestPlayer(player);
         return storage.upsert(questPlayer).thenRun(() -> {
             cache.remove(player.getUniqueId());
         }).exceptionally((throwable) -> {
-           plugin.getLogger().log(Level.SEVERE, "An error occurred while saving player " + player.getName(), throwable);
+           plugin.getLogger().log(Level.SEVERE, "An error occurred while saving player: '" + player.getName() + "'", throwable);
            return null;
         });
     }
 
     @Nullable
-    public QuestPlayer getQuestPlayer(Player player) {
+    public QuestPlayer getCachedQuestPlayer(Player player) {
         return cache.get(player.getUniqueId());
     }
 
     @UnmodifiableView
-    public Collection<QuestPlayer> getCachedQuestPlayer(Player player) {
+    public Collection<QuestPlayer> getCachedQuestPlayers() {
         return Collections.unmodifiableCollection(cache.values());
     }
 
@@ -65,6 +74,6 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<List<QuestPlayer>> getAllQuestPlayers() {
-        return storage.sel
+        return storage.selectAll();
     }
 }

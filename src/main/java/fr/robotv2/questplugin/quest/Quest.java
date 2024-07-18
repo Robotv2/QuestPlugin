@@ -109,24 +109,15 @@ public class Quest implements Optionnable {
     }
 
     @Override
-    public String toString() {
-        return "Quest{" +
-                "questId='" + questId + '\'' +
-                ", questName='" + questName + '\'' +
-                ", tasks=" + tasks +
-                '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Quest)) return false;
         Quest quest = (Quest) o;
-        return Objects.equals(questId, quest.questId);
+        return Objects.equals(questId, quest.questId) && Objects.equals(questGroup, quest.questGroup);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(questId);
+        return Objects.hash(questId, questGroup);
     }
 }

@@ -34,7 +34,7 @@ public class ActiveQuest implements Serializable {
                 player.getUniqueId(),
                 quest.getQuestId(),
                 quest.getQuestGroup().getGroupId(),
-                -1, // TODO
+                quest.getQuestGroup().getNextReset(),
                 quest.getTasks().stream().map((task) -> new ActiveTask(quest, task)).collect(Collectors.toCollection(HashSet::new)),
                 !quest.getOptionValue(Optionnable.Option.NEED_STARTING)
         );

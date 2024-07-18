@@ -1,16 +1,13 @@
 package fr.robotv2.questplugin.storage.model;
 
 import fr.robotv2.questplugin.group.QuestGroup;
+import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.storage.Identifiable;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class QuestPlayer implements java.io.Serializable, Identifiable<UUID> {
@@ -19,6 +16,7 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID> {
 
     private String playerName;
 
+    // HashSet is used directly for serialization reason.
     private HashSet<ActiveQuest> activeQuests;
 
     public QuestPlayer(Player player) {
@@ -38,6 +36,10 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID> {
 
     public String getPlayerName() {
         return playerName;
+    }
+
+    public Player getPlayer() {
+        return Bukkit.getPlayer(getId());
     }
 
     @UnmodifiableView
@@ -65,8 +67,12 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID> {
         this.activeQuests.add(activeQuest);
     }
 
-    public void removeActiveQuest(String resetId) {
-        this.activeQuests.removeIf(quest -> quest.getGroupId().equalsIgnoreCase(resetId));
+    public void checkEndedQuests() {
+        this.activeQuests.removeIf(ActiveQuest::hasEnded);
+    }
+
+    public void removeActiveQuest(String groupId) {
+        this.activeQuests.removeIf(quest -> quest.getGroupId().equalsIgnoreCase(groupId));
     }
 
     public void removeActiveQuest(QuestGroup group) {
@@ -77,7 +83,9 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID> {
         activeQuests.clear();
     }
 
-    public boolean hasQuest(String questId) {
-        return getActiveQuests().stream().anyMatch(quest -> quest.getQuestId().equalsIgnoreCase(questId));
+    public boolean hasQuest(Quest quest) {
+        return getActiveQuests().stream()
+                .anyMatch(other -> Objects.equals(quest.getQuestId(), other.getQuestId())
+                        && Objects.equals(quest.getQuestGroup().getGroupId(), other.getGroupId()));
     }
 }

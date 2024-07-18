@@ -19,12 +19,12 @@ public class QuestOption implements Optionnable {
             options.put(Option.DEPENDANT_TASK, section.getBoolean("dependant-tasks"));
         }
 
-        if(section.isBoolean("global")) {
-            options.put(Option.GLOBAL, section.getBoolean("global"));
-        }
+//        if(section.isBoolean("global")) {
+//            options.put(Option.GLOBAL, section.getBoolean("global"));
+//        }
 
-        if(section.isBoolean("redeemable")) {
-            options.put(Option.REDEEMABLE, section.getBoolean("redeemable"));
+        if(section.isBoolean("automatically-given")) {
+            options.put(Option.AUTOMATICALLY_GIVEN, section.getBoolean("automatically-given"));
         }
 
         if(section.isBoolean("need-starting")) {

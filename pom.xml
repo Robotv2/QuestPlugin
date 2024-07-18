@@ -36,6 +36,10 @@
                             <pattern>com.cryptomorin.xseries</pattern>
                             <shadedPattern>fr.robotv2.questplugin.utils</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>it.sauronsoftware.cron4j</pattern>
+                            <shadedPattern>fr.robotv2.questplugin.cron</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
@@ -65,7 +69,10 @@
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
-
+        <repository>
+            <id>jitpack</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -87,5 +94,29 @@
             <version>11.2.0.1</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>it.sauronsoftware.cron4j</groupId>
+            <artifactId>cron4j</artifactId>
+            <version>2.2.5</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.MilkBowl</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.7.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.Revxrsal.Lamp</groupId>
+            <artifactId>common</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.Revxrsal.Lamp</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+
     </dependencies>
 </project>

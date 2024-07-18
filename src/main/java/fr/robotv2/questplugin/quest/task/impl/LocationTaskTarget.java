@@ -9,10 +9,6 @@ import org.bukkit.World;
 
 public class LocationTaskTarget extends TaskTarget<Location> {
 
-    static {
-        TaskTargets.registerResolver(Location.class, LocationTaskTarget::new);
-    }
-
     private final Location location;
     private final double distanceFromLocation;
 
