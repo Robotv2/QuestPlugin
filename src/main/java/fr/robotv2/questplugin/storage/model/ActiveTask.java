@@ -23,6 +23,11 @@ public class ActiveTask implements java.io.Serializable {
     private BigDecimal progress;
 
     /**
+     * Representing the required progress to finish this task
+     */
+    private double required;
+
+    /**
      * Representing whether the quest has been done or not
      */
     private boolean done;
@@ -32,14 +37,16 @@ public class ActiveTask implements java.io.Serializable {
                 quest.getQuestId(),
                 task.getTaskId(),
                 BigDecimal.valueOf(0),
+                task.getRequiredAmount(),
                 false
         );
     }
 
-    public ActiveTask(String parentQuestId, String taskId, BigDecimal progress, boolean done) {
+    public ActiveTask(String parentQuestId, String taskId, BigDecimal progress, double required, boolean done) {
         this.parentQuestId = parentQuestId;
         this.taskId = taskId;
         this.progress = progress;
+        this.required = required;
         this.done = done;
     }
 
@@ -55,12 +62,12 @@ public class ActiveTask implements java.io.Serializable {
         return progress;
     }
 
-    /**
-     * Method to add progress to this model
-     * @param amount the progress to add
-     */
     public void addProgress(Number amount) {
         this.progress = progress.add(BigDecimal.valueOf(amount.doubleValue()));
+    }
+
+    public double getRequired() {
+        return required;
     }
 
     public boolean isDone() {
