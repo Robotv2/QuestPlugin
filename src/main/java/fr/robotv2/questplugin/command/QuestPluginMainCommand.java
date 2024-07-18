@@ -48,6 +48,6 @@ public class QuestPluginMainCommand {
         }
 
         questPlayer.addActiveQuest(new ActiveQuest(target, quest));
-        actor.getSender().sendMessage(ChatColor.GREEN + "The quest '" + quest.getQuestId() + "' has been successfully been given to the player '" + target.getName() + "'.");
+        actor.getSender().sendMessage(ChatColor.GREEN + "The quest '" + quest.getQuestId() + "' has successfully been given to the player '" + target.getName() + "'.");
     }
 }
