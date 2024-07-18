@@ -1,11 +1,5 @@
 Things remaining:
 
-- Quest filler - need testing
-- Cron jobs - done
 - command system
 - do all the quest types (rip)
-
-options done:
-
-NEED_STARTING - done
-DEPENDANT_TASK - done
+- Cosmetic (actionbar - title)
