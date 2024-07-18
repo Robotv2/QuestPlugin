@@ -44,7 +44,7 @@ public class DatabaseManager {
             cache.put(player.getUniqueId(), questPlayer);
             return questPlayer;
         }).exceptionally((throwable) -> {
-            plugin.getLogger().log(Level.SEVERE, "An error occurred while loading player " + player.getName(), throwable);
+            plugin.getLogger().log(Level.SEVERE, "An error occurred while loading player: '" + player.getName() + "'", throwable);
             return null;
         });
     }
