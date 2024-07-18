@@ -1,12 +1,13 @@
 package fr.robotv2.questplugin.quest.type;
 
 import com.cryptomorin.xseries.XMaterial;
+import fr.robotv2.questplugin.util.McVersion;
+import org.bukkit.Location;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class QuestType<T> {
 
@@ -16,6 +17,8 @@ public class QuestType<T> {
 
     public static final QuestType<XMaterial> PLACE_TYPE = registerType(new QuestType<>("PLACE", XMaterial.class));
 
+    public static final QuestType<Location> LOCATION_TYPE = registerType(new QuestType<>("LOCATION", Location.class));
+
     @Contract("_ -> _;")
     public static <T> QuestType<T> registerType(QuestType<T> type) {
         TYPES.put(type.literal.toLowerCase(), type);
@@ -23,8 +26,18 @@ public class QuestType<T> {
     }
 
     @Nullable
+    public static <T> QuestType<T> registerType(QuestType<T> type, McVersion required) {
+        return McVersion.current().isAtLeast(required) ? registerType(type) : null;
+    }
+
+    @Nullable
     public static QuestType<?> getByLiteral(String literal) {
         return TYPES.get(literal.toLowerCase());
+    }
+
+    @UnmodifiableView
+    public static Collection<QuestType<?>> getLoadedTypes() {
+        return Collections.unmodifiableCollection(TYPES.values());
     }
 
     private final String literal;
@@ -53,6 +66,10 @@ public class QuestType<T> {
 
     public boolean isNumerical() {
         return numerical;
+    }
+
+    public boolean isLoaded() {
+        return getLoadedTypes().contains(this);
     }
 
     @Override
