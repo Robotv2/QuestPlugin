@@ -13,6 +13,7 @@ import org.bukkit.OfflinePlayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class QuestResetHandler {
 
@@ -29,6 +30,13 @@ public class QuestResetHandler {
         for (QuestPlayer questPlayer : databaseManager.getCachedQuestPlayers()) {
             questPlayer.removeActiveQuest(group);
         }
+
+        plugin.getDatabaseManager().getActiveQuestRepository().remove(group).thenRun(() -> {
+            plugin.getLogger().info("All stored quest in group " + group.getGroupId() + " have been successfully removed.");
+        }).exceptionally((throwable) -> {
+            plugin.getLogger().log(Level.SEVERE, "An error occurred while deleting stored quests from storage.", throwable);
+            return null;
+        });
 
         if(!group.getOption().getOptionValue(Optionnable.Option.AUTOMATICALLY_GIVEN)) {
             return;

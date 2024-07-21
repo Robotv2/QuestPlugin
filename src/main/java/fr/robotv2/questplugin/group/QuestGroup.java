@@ -38,6 +38,8 @@ public class QuestGroup {
             this.cronJob = new CronJob(this.cronSyntax, () -> QuestPlugin.instance().getResetHandler().reset(this));
             this.cronJob.prepare();
             this.cronJob.start();
+        } else {
+            this.cronJob = null;
         }
 
         if(section.isConfigurationSection("assignations")) {

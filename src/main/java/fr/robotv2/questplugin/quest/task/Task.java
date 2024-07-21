@@ -4,27 +4,28 @@ import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.type.QuestType;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
 public class Task {
 
     private final Quest parent;
-    private final String id;
+    private final int id;
     private final ConfigurationSection section;
 
     private final QuestType<?> type;
-    private final double requiredAmount;
+    private final BigDecimal requiredAmount;
     private final List<String> rewards;
 
     private final transient TaskTarget<?> target;
 
     public Task(Quest quest, ConfigurationSection section) {
         this.parent = quest;
-        this.id = section.getName();
+        this.id = Integer.parseInt(section.getName());
         this.section = section;
         this.type = Objects.requireNonNull(QuestType.getByLiteral(section.getString("task_type")), "Invalid task type.");
-        this.requiredAmount = this.type.isNumerical() ? section.getDouble("required_amount") : 1D;
+        this.requiredAmount = this.type.isNumerical() ? BigDecimal.valueOf(section.getDouble("required_amount")) : BigDecimal.ONE;
         this.rewards = section.getStringList("task_rewards");
         this.target = TaskTargets.resolve(this);
     }
@@ -33,7 +34,7 @@ public class Task {
         return parent;
     }
 
-    public String getTaskId() {
+    public int getTaskId() {
         return id;
     }
 
@@ -41,7 +42,7 @@ public class Task {
         return section;
     }
 
-    public double getRequiredAmount() {
+    public BigDecimal getRequiredAmount() {
         return requiredAmount;
     }
 

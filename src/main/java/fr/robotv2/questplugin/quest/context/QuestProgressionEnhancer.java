@@ -79,7 +79,7 @@ public abstract class QuestProgressionEnhancer implements Listener {
                 continue; // only skip if the target is not null
             }
 
-            final QuestIncrementEvent event = new QuestIncrementEvent(quest, task, activeTask.getProgress(), context.getInitiator());
+            final QuestIncrementEvent event = new QuestIncrementEvent(quest, task, activeQuest, activeTask, context.getInitiator());
             Bukkit.getPluginManager().callEvent(event);
 
             if(event.isCancelled()) {
@@ -88,7 +88,7 @@ public abstract class QuestProgressionEnhancer implements Listener {
 
             activeTask.addProgress(context.getAmount());
 
-            if(activeTask.getProgress().compareTo(BigDecimal.valueOf(task.getRequiredAmount())) >= 0) {
+            if(activeTask.getProgress().compareTo(task.getRequiredAmount()) >= 0) {
                 activeTask.setDone(true);
             }
         }

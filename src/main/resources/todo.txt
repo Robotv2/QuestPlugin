@@ -1,5 +1,6 @@
 Things remaining:
 
-- command system
+- Placeholders
+- Parse them in cosmetics
 - do all the quest types (rip)
-- Cosmetic (actionbar - title)
+

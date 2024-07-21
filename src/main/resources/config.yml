@@ -2,3 +2,19 @@ debug: true
 
 database:
   type: JSON
+
+cosmetics:
+  quest_increment:
+    action_bars:
+      enabled: true
+      message: ""
+    titles:
+      title: ""
+      subtitle: ""
+  quest_done:
+    action_bars:
+      enabled: true
+      message: ""
+    titles:
+      title: ""
+      subtitle: ""

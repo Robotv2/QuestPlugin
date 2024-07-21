@@ -3,15 +3,20 @@ package fr.robotv2.questplugin.storage.model;
 import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.enums.QuestStatus;
 import fr.robotv2.questplugin.quest.options.Optionnable;
+import fr.robotv2.questplugin.storage.DirtyAware;
+import fr.robotv2.questplugin.storage.Identifiable;
+import fr.robotv2.questplugin.storage.dto.ActiveQuestDto;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class ActiveQuest implements Serializable {
+public class ActiveQuest implements java.io.Serializable, Identifiable<UUID>, DirtyAware {
 
     private UUID activeQuestUniqueId;
 
@@ -23,10 +28,11 @@ public class ActiveQuest implements Serializable {
 
     private long nextReset;
 
-    // HashSet is used directly for serialization reason.
-    private HashSet<ActiveTask> tasks;
+    private transient Set<ActiveTask> tasks;
 
     private boolean started;
+
+    private transient boolean dirty;
 
     public ActiveQuest(Player player, Quest quest) {
         this(
@@ -35,12 +41,25 @@ public class ActiveQuest implements Serializable {
                 quest.getQuestId(),
                 quest.getQuestGroup().getGroupId(),
                 quest.getQuestGroup().getNextReset(),
-                quest.getTasks().stream().map((task) -> new ActiveTask(quest, task)).collect(Collectors.toCollection(HashSet::new)),
+                quest.getTasks().stream().map((task) -> new ActiveTask(quest, task)).collect(Collectors.toSet()),
                 !quest.getOptionValue(Optionnable.Option.NEED_STARTING)
         );
     }
 
-    public ActiveQuest(UUID activeQuestUniqueId, UUID owner, String questId, String groupId, long nextReset, HashSet<ActiveTask> tasks, boolean started) {
+    @ApiStatus.Internal
+    public ActiveQuest(ActiveQuestDto dto, Set<ActiveTask> tasks) {
+        this(
+                dto.getId(),
+                dto.getOwner(),
+                dto.getQuestId(),
+                dto.getGroupId(),
+                dto.getNextReset(),
+                tasks,
+                dto.isStarted()
+        );
+    }
+
+    public ActiveQuest(UUID activeQuestUniqueId, UUID owner, String questId, String groupId, long nextReset, @Nullable Set<ActiveTask> tasks, boolean started) {
         this.activeQuestUniqueId = activeQuestUniqueId;
         this.owner = owner;
         this.questId = questId;
@@ -50,7 +69,8 @@ public class ActiveQuest implements Serializable {
         this.started = started;
     }
 
-    public UUID getUniqueId() {
+    @Override
+    public UUID getId() {
         return activeQuestUniqueId;
     }
 
@@ -66,16 +86,28 @@ public class ActiveQuest implements Serializable {
         return groupId;
     }
 
-    public Set<ActiveTask> getTasks() {
-        return tasks;
+    public long getNextReset() {
+        return nextReset;
     }
 
-    public ActiveTask getActiveTask(String taskId) {
-        return tasks.stream().filter(activeTask -> activeTask.getTaskId().equals(taskId)).findAny().orElse(null);
+    @ApiStatus.Internal
+    public void addTask(ActiveTask task) {
+        if(tasks == null) {
+            tasks = new HashSet<>();
+        }
+        tasks.add(task);
+    }
+
+    public Set<ActiveTask> getTasks() {
+        return tasks == null ? Collections.emptySet() : tasks;
+    }
+
+    public ActiveTask getActiveTask(int taskId) {
+        return getTasks().stream().filter(activeTask -> activeTask.getTaskId() == taskId).findAny().orElse(null);
     }
 
     public boolean isDone() {
-        return tasks.stream().allMatch(ActiveTask::isDone);
+        return getTasks().stream().allMatch(ActiveTask::isDone);
     }
 
     public boolean isStarted() {
@@ -93,5 +125,15 @@ public class ActiveQuest implements Serializable {
         }
 
         return isStarted() ? QuestStatus.STARTED : QuestStatus.NOT_STARTED;
+    }
+
+    @Override
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    @Override
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
     }
 }

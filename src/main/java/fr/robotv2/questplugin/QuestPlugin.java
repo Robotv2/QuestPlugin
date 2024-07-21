@@ -9,7 +9,6 @@ import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.QuestManager;
 import fr.robotv2.questplugin.quest.context.block.BlockBreakListener;
 import fr.robotv2.questplugin.quest.context.block.BlockPlaceListener;
-import fr.robotv2.questplugin.quest.task.TaskTargets;
 import fr.robotv2.questplugin.util.GroupUtil;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,6 +25,7 @@ public final class QuestPlugin extends JavaPlugin {
     private QuestGroupManager questGroupManager;
     private DatabaseManager databaseManager;
 
+    private QuestPluginConfiguration questConfiguration;
     private QuestResetHandler resetHandler;
 
     public static QuestPlugin instance() {
@@ -48,6 +48,7 @@ public final class QuestPlugin extends JavaPlugin {
         }
 
         saveDefaultConfig();
+        this.questConfiguration = new QuestPluginConfiguration();
 
         this.questGroupManager = new QuestGroupManager(getRelativeFile("groups"));
         this.questManager = new QuestManager(this, getRelativeFile("quests"));
@@ -65,14 +66,23 @@ public final class QuestPlugin extends JavaPlugin {
         GroupUtil.initialize(this);
     }
 
+    @Override
+    public void onDisable() {
+        getDatabaseManager().close();
+    }
+
     public void onReload() {
+
+        reloadConfig();
+        getQuestConfiguration().loadConfiguration(getConfig());
+
         getQuestGroupManager().getGroups().forEach(QuestGroup::stopCronJob);
         getQuestGroupManager().loadGroups();
         getQuestManager().loadQuests();
     }
 
     public void dbg(String message) {
-        if(getConfig().getBoolean("debug")) {
+        if(getQuestConfiguration().isDebug()) {
             getLogger().info("[DEBUG] " + message);
         }
     }
@@ -89,12 +99,20 @@ public final class QuestPlugin extends JavaPlugin {
         return databaseManager;
     }
 
+    public QuestPluginConfiguration getQuestConfiguration() {
+        return questConfiguration;
+    }
+
     public QuestResetHandler getResetHandler() {
         return resetHandler;
     }
 
     public File getRelativeFile(String path) {
         return new File(getDataFolder(), path);
+    }
+
+    public File getQuestDataFolder() {
+        return getRelativeFile("data");
     }
 
     private void registerListeners() {
