@@ -141,7 +141,7 @@ public class DatabaseManager {
 
     @Nullable
     public QuestPlayer getCachedQuestPlayer(Player player) {
-        return getCachedQuestPlayer(player);
+        return getCachedQuestPlayer(player.getUniqueId());
     }
 
     @Nullable
