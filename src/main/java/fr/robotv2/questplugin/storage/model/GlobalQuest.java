@@ -19,7 +19,7 @@ public class GlobalQuest implements Identifiable<UUID> {
     }
 
     public GlobalQuest(GlobalQuestDto dto) {
-        this(dto.getGlobalQuestId(), dto.getGroupId(), dto.getQuestId());
+        this(dto.getId(), dto.getGroupId(), dto.getQuestId());
     }
 
     public GlobalQuest(UUID uuid, String groupId, String questId) {

@@ -11,7 +11,7 @@ public class FileUtil {
 
     public static void iterateFiles(File initial, Consumer<File> consumer) {
 
-        if(!initial.exists() || !initial.isDirectory()) {
+        if(!initial.exists()) {
             return;
         }
 

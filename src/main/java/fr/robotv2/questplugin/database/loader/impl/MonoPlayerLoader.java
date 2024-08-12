@@ -36,7 +36,7 @@ public class MonoPlayerLoader implements PlayerLoader, Listener {
                 .thenCompose((questPlayer) -> manager.getActiveQuestRepository().removeIfEnded(questPlayer).thenApply((ignored) -> questPlayer))
                 .thenApply((questPlayer) -> {
                     final int amount = manager.getPlugin().getResetHandler().fillPlayer(questPlayer);
-                    QuestPlugin.debug("'" + amount + "' quest(s) has been given to the player '" + player.getName() + "'.");
+                    if(amount != 0) QuestPlugin.debug(amount + " quest(s) has been given to the player '" + player.getName() + "'.");
                     return questPlayer;
                 })
                 .thenRun(() -> {
