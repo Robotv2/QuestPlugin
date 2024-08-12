@@ -8,15 +8,10 @@ import fr.robotv2.questplugin.storage.dto.QuestPlayerDto;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, DirtyAware {
@@ -57,9 +52,8 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, Di
         return Bukkit.getPlayer(getId());
     }
 
-    @UnmodifiableView
     public Set<ActiveQuest> getActiveQuests() {
-        return Collections.unmodifiableSet(activeQuests);
+        return activeQuests;
     }
 
     @UnmodifiableView
@@ -82,11 +76,6 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, Di
     public void addActiveQuest(ActiveQuest activeQuest) {
         this.activeQuests.add(activeQuest);
         setDirty(true);
-    }
-
-    public void checkEndedQuests() {
-        boolean result = this.activeQuests.removeIf(ActiveQuest::hasEnded);
-        if(result) setDirty(true);
     }
 
     public void removeActiveQuest(String groupId) {

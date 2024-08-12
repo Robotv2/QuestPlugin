@@ -1,12 +1,15 @@
 package fr.robotv2.questplugin.quest.task;
 
+import fr.robotv2.questplugin.conditions.Condition;
 import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.type.QuestType;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class Task {
 
@@ -17,8 +20,9 @@ public class Task {
     private final QuestType<?> type;
     private final BigDecimal requiredAmount;
     private final List<String> rewards;
+    private final Set<Condition> conditions;
 
-    private final transient TaskTarget<?> target;
+    private final TaskTarget<?> target;
 
     public Task(Quest quest, ConfigurationSection section) {
         this.parent = quest;
@@ -27,7 +31,10 @@ public class Task {
         this.type = Objects.requireNonNull(QuestType.getByLiteral(section.getString("task_type")), "Invalid task type.");
         this.requiredAmount = this.type.isNumerical() ? BigDecimal.valueOf(section.getDouble("required_amount")) : BigDecimal.ONE;
         this.rewards = section.getStringList("task_rewards");
+        this.conditions = new HashSet<>();
         this.target = TaskTargets.resolve(this);
+
+        registerConditions(section.getConfigurationSection("conditions"));
     }
 
     public Quest getParent() {
@@ -60,6 +67,23 @@ public class Task {
 
     public boolean isTarget(Object value) {
         return getTaskTarget() == null || getTaskTarget().isTarget(value);
+    }
+
+    public Set<Condition> getConditions() {
+        return conditions;
+    }
+
+    private void registerConditions(ConfigurationSection conditionsSection) {
+
+        conditions.clear();
+
+        if(conditionsSection == null) {
+            return;
+        }
+
+        for(String key : conditionsSection.getKeys(false)) {
+            parent.getPlugin().getConditionManager().toInstance(conditionsSection, key).ifPresent(conditions::add);
+        }
     }
 
     @Override

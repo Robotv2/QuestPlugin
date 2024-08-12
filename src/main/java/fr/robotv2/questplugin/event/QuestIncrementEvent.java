@@ -1,15 +1,12 @@
 package fr.robotv2.questplugin.event;
 
 import fr.robotv2.questplugin.quest.Quest;
-
 import fr.robotv2.questplugin.quest.task.Task;
 import fr.robotv2.questplugin.storage.model.ActiveQuest;
 import fr.robotv2.questplugin.storage.model.ActiveTask;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
-
-import java.math.BigDecimal;
 
 public class QuestIncrementEvent extends QuestEvent implements Cancellable {
 
@@ -19,7 +16,9 @@ public class QuestIncrementEvent extends QuestEvent implements Cancellable {
 
     private final Task task;
 
-    private final BigDecimal progress;
+    private final ActiveQuest activeQuest;
+
+    private final ActiveTask activeTask;
 
     private boolean cancel = false;
 
@@ -27,6 +26,8 @@ public class QuestIncrementEvent extends QuestEvent implements Cancellable {
         super(quest);
         this.player = player;
         this.task = task;
+        this.activeQuest = activeQuest;
+        this.activeTask = activeTask;
     }
 
     public Player getPlayer() {
@@ -37,8 +38,12 @@ public class QuestIncrementEvent extends QuestEvent implements Cancellable {
         return task;
     }
 
-    public BigDecimal getProgress() {
-        return progress;
+    public ActiveQuest getActiveQuest() {
+        return activeQuest;
+    }
+
+    public ActiveTask getActiveTask() {
+        return activeTask;
     }
 
     @Override

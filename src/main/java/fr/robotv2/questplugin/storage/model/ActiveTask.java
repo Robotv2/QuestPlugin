@@ -113,6 +113,11 @@ public class ActiveTask implements java.io.Serializable, Identifiable<UUID>, Dir
         setDirty(true);
     }
 
+    public void removeProgress(Number amount) {
+        this.progress = progress.subtract(BigDecimal.valueOf(amount.doubleValue()));
+        setDirty(true);
+    }
+
     public BigDecimal getRequired() {
         return required;
     }

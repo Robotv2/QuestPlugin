@@ -4,7 +4,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.group.QuestGroup;
-import fr.robotv2.questplugin.storage.model.QuestPlayer;
 import fr.robotv2.questplugin.util.FileUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -14,8 +13,6 @@ import org.jetbrains.annotations.UnmodifiableView;
 
 import java.io.File;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class QuestManager {
 
@@ -90,6 +87,7 @@ public class QuestManager {
 
         if(!questFolder.exists()) {
             questFolder.mkdirs();
+            setupDefaultQuests();
         }
 
         FileUtil.iterateFiles(questFolder, (file) -> {
@@ -118,5 +116,9 @@ public class QuestManager {
             plugin.getLogger().warning("the plugin.");
             plugin.getLogger().warning(" ");
         }
+    }
+
+    private void setupDefaultQuests() {
+        plugin.saveResource("quests" + File.separator + "daily-quests.yml", false);
     }
 }

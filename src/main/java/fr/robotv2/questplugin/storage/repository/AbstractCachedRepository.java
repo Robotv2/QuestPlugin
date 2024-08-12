@@ -3,6 +3,7 @@ package fr.robotv2.questplugin.storage.repository;
 import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.storage.DirtyAware;
 import fr.robotv2.questplugin.storage.Identifiable;
+import fr.robotv2.questplugin.util.Futures;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -85,12 +86,15 @@ public abstract class AbstractCachedRepository<ID, T extends Identifiable<ID>> i
         boolean isDirtyAware = DirtyAware.class.isAssignableFrom(getGenericTypeClass());
 
         if (isDirtyAware) {
-            cache.values().stream().filter(value -> ((DirtyAware) value).isDirty()).forEach(value -> futures.add(upsert(value)));
+            cache.values().stream().filter(value -> ((DirtyAware) value).isDirty()).forEach(value -> {
+                futures.add(upsert(value));
+                ((DirtyAware) value).setDirty(false);
+            });
         } else {
             cache.values().forEach(value -> futures.add(upsert(value)));
         }
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        Futures.ofAll(futures).join();
     }
 
     @SuppressWarnings("unchecked")

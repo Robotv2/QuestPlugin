@@ -1,5 +1,6 @@
 package fr.robotv2.questplugin.group;
 
+import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.util.FileUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -8,11 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class QuestGroupManager {
 
@@ -41,6 +38,7 @@ public class QuestGroupManager {
 
         if(!groupFolder.exists()) {
             groupFolder.mkdirs();
+            setupDefaultGroups();
         }
 
         FileUtil.iterateFiles(groupFolder, (file) -> {
@@ -63,5 +61,10 @@ public class QuestGroupManager {
     private void loadGroup(String groupId, ConfigurationSection section) {
         final QuestGroup group = new QuestGroup(groupId, section);
         this.groups.put(groupId.toLowerCase(), group);
+    }
+
+    private void setupDefaultGroups() {
+        QuestPlugin.instance()
+                .saveResource("groups" + File.separator + "daily.yml", false);
     }
 }

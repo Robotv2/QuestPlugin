@@ -1,6 +1,7 @@
 package fr.robotv2.questplugin.storage.repository.json;
 
-import fr.robotv2.questplugin.database.DatabaseManager;
+import fr.robotv2.questplugin.api.database.IDatabaseManager;
+import fr.robotv2.questplugin.database.InternalDatabaseManager;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.storage.dto.ActiveQuestDto;
 import fr.robotv2.questplugin.storage.model.ActiveQuest;
@@ -17,10 +18,10 @@ import java.util.concurrent.CompletableFuture;
 
 public class ActiveQuestJsonRepository extends GenericJsonRepository<UUID, ActiveQuestDto> implements ActiveQuestRepository {
 
-    private final DatabaseManager databaseManager;
+    private final IDatabaseManager databaseManager;
 
-    public ActiveQuestJsonRepository(DatabaseManager manager, File folder) {
-        super(manager, folder, ActiveQuestDto.class);
+    public ActiveQuestJsonRepository(IDatabaseManager manager, File folder) {
+        super(folder, ActiveQuestDto.class);
         this.databaseManager = manager;
     }
 
@@ -44,6 +45,24 @@ public class ActiveQuestJsonRepository extends GenericJsonRepository<UUID, Activ
     }
 
     @Override
+    public CompletableFuture<Void> removeIfEnded(QuestPlayer questPlayer) {
+
+        final List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        questPlayer.getActiveQuests().removeIf((activeQuest) -> {
+
+            if(!activeQuest.hasEnded()) {
+                return false;
+            }
+
+            futures.add(remove(new ActiveQuestDto(activeQuest)));
+            return true;
+        });
+
+        return Futures.ofAll(futures);
+    }
+
+    @Override
     public CompletableFuture<Void> removeFromDataSource(ActiveQuestDto quest) {
         final List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -52,10 +71,5 @@ public class ActiveQuestJsonRepository extends GenericJsonRepository<UUID, Activ
         }
 
         return Futures.ofAll(futures);
-    }
-
-    @Override
-    public CompletableFuture<Void> removeFromIdInDataSource(UUID uuid) {
-        throw new RuntimeException("Can't remove active quest from id directly.");
     }
 }

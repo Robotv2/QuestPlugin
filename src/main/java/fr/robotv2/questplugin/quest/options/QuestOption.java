@@ -1,6 +1,7 @@
 package fr.robotv2.questplugin.quest.options;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -9,7 +10,7 @@ public class QuestOption implements Optionnable {
 
     private final Map<Option, Boolean> options = new EnumMap<>(Option.class);
 
-    public QuestOption(final ConfigurationSection section) {
+    public QuestOption(final @Nullable ConfigurationSection section) {
 
         if(section == null) {
             return;
@@ -19,9 +20,9 @@ public class QuestOption implements Optionnable {
             options.put(Option.DEPENDANT_TASK, section.getBoolean("dependant-tasks"));
         }
 
-//        if(section.isBoolean("global")) {
-//            options.put(Option.GLOBAL, section.getBoolean("global"));
-//        }
+        if(section.isBoolean("global")) {
+            options.put(Option.GLOBAL, section.getBoolean("global"));
+        }
 
         if(section.isBoolean("automatically-given")) {
             options.put(Option.AUTOMATICALLY_GIVEN, section.getBoolean("automatically-given"));

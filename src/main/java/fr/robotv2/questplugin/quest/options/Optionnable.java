@@ -11,7 +11,7 @@ public interface Optionnable {
     static Map<Option, Boolean> createDefaultMap() {
         Map<Option, Boolean> defaultMap = new EnumMap<>(Option.class);
         defaultMap.put(Option.DEPENDANT_TASK, Boolean.FALSE);
-        // defaultMap.put(Option.GLOBAL, Boolean.FALSE);
+        defaultMap.put(Option.GLOBAL, Boolean.FALSE);
         defaultMap.put(Option.NEED_STARTING, Boolean.FALSE);
         defaultMap.put(Option.AUTOMATICALLY_GIVEN, Boolean.TRUE);
         return Collections.unmodifiableMap(defaultMap);
@@ -30,7 +30,7 @@ public interface Optionnable {
     enum Option {
         DEPENDANT_TASK, // group & individual
         NEED_STARTING, // group & individual
-        // GLOBAL, // group only
+        GLOBAL, // group only
         AUTOMATICALLY_GIVEN, // group only
         ;
     }

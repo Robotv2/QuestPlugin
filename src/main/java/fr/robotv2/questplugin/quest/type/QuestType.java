@@ -13,7 +13,7 @@ public class QuestType<T> {
 
     public static final Map<String, QuestType<?>> TYPES = new HashMap<>();
 
-    public static final QuestType<XMaterial> BREAK_TYPE = registerType(new QuestType<>("BLOCK", XMaterial.class));
+    public static final QuestType<XMaterial> BREAK_TYPE = registerType(new QuestType<>("BREAK", XMaterial.class));
 
     public static final QuestType<XMaterial> PLACE_TYPE = registerType(new QuestType<>("PLACE", XMaterial.class));
 

@@ -5,16 +5,18 @@ database:
 
 cosmetics:
   quest_increment:
-    action_bars:
+    action_bar:
       enabled: true
-      message: ""
+      message: "&e%quest_name% &8| &e%task_progress%/%task_required%"
     titles:
+      enabled: false
       title: ""
       subtitle: ""
   quest_done:
-    action_bars:
-      enabled: true
+    action_bar:
+      enabled: false
       message: ""
     titles:
-      title: ""
-      subtitle: ""
+      enabled: true
+      title: "&aCongratulations !"
+      subtitle: "&aYou have just finished the quest: %quest_name%"

@@ -1,7 +1,9 @@
 package fr.robotv2.questplugin;
 
+import fr.robotv2.questplugin.api.database.IDatabaseManager;
 import fr.robotv2.questplugin.command.QuestPluginMainCommand;
-import fr.robotv2.questplugin.database.DatabaseManager;
+import fr.robotv2.questplugin.conditions.ConditionManager;
+import fr.robotv2.questplugin.database.InternalDatabaseManager;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.group.QuestGroupManager;
 import fr.robotv2.questplugin.listeners.QuestIncrementListener;
@@ -10,6 +12,10 @@ import fr.robotv2.questplugin.quest.QuestManager;
 import fr.robotv2.questplugin.quest.context.block.BlockBreakListener;
 import fr.robotv2.questplugin.quest.context.block.BlockPlaceListener;
 import fr.robotv2.questplugin.util.GroupUtil;
+import fr.robotv2.questplugin.util.McVersion;
+import fr.robotv2.questplugin.util.color.ColorProvider;
+import fr.robotv2.questplugin.util.color.LegacyColorProvider;
+import fr.robotv2.questplugin.util.color.ModernColorProvider;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import revxrsal.commands.autocomplete.SuggestionProvider;
@@ -23,10 +29,13 @@ public final class QuestPlugin extends JavaPlugin {
 
     private QuestManager questManager;
     private QuestGroupManager questGroupManager;
-    private DatabaseManager databaseManager;
+    private IDatabaseManager databaseManager;
 
     private QuestPluginConfiguration questConfiguration;
     private QuestResetHandler resetHandler;
+    private ConditionManager conditionManager;
+
+    private ColorProvider colorProvider;
 
     public static QuestPlugin instance() {
         return JavaPlugin.getPlugin(QuestPlugin.class);
@@ -41,24 +50,39 @@ public final class QuestPlugin extends JavaPlugin {
     }
 
     @Override
+    public void onLoad() {
+        this.conditionManager = new ConditionManager(this);
+        this.conditionManager.registerDefaultConditions();
+    }
+
+    @Override
     public void onEnable() {
 
         if(!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
 
+        this.conditionManager.closeRegistration();
+
         saveDefaultConfig();
         this.questConfiguration = new QuestPluginConfiguration();
 
         this.questGroupManager = new QuestGroupManager(getRelativeFile("groups"));
         this.questManager = new QuestManager(this, getRelativeFile("quests"));
-        this.databaseManager = new DatabaseManager(this);
+        this.conditionManager = new ConditionManager(this);
+
+        if(this.databaseManager != null) {
+            databaseManager = new InternalDatabaseManager(this);
+        }
+
+        getQuestConfiguration().loadConfiguration(getConfig());
 
         getQuestGroupManager().loadGroups();
         getQuestManager().loadQuests();
         getDatabaseManager().init();
 
         this.resetHandler = new QuestResetHandler(this);
+        this.colorProvider = McVersion.current().isAtLeast(1, 17) ? new ModernColorProvider() : new LegacyColorProvider();
 
         registerListeners();
         registerCommands();
@@ -95,8 +119,12 @@ public final class QuestPlugin extends JavaPlugin {
         return questGroupManager;
     }
 
-    public DatabaseManager getDatabaseManager() {
+    public IDatabaseManager getDatabaseManager() {
         return databaseManager;
+    }
+
+    public void setDatabaseManager(IDatabaseManager databaseManager) {
+        this.databaseManager = databaseManager;
     }
 
     public QuestPluginConfiguration getQuestConfiguration() {
@@ -115,10 +143,18 @@ public final class QuestPlugin extends JavaPlugin {
         return getRelativeFile("data");
     }
 
+    public ColorProvider getColorProvider() {
+        return colorProvider;
+    }
+
+    public ConditionManager getConditionManager() {
+        return conditionManager;
+    }
+
     private void registerListeners() {
         final PluginManager pm = getServer().getPluginManager();
 
-        pm.registerEvents(new QuestIncrementListener(), this);
+        pm.registerEvents(new QuestIncrementListener(this), this);
 
         pm.registerEvents(new BlockBreakListener(this), this);
         pm.registerEvents(new BlockPlaceListener(this), this);

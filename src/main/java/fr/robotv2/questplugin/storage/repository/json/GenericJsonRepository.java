@@ -3,17 +3,10 @@ package fr.robotv2.questplugin.storage.repository.json;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.robotv2.questplugin.QuestPlugin;
-import fr.robotv2.questplugin.database.DatabaseManager;
 import fr.robotv2.questplugin.storage.Identifiable;
 import fr.robotv2.questplugin.storage.repository.AbstractCachedRepository;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +18,6 @@ import java.util.function.Predicate;
 
 public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends AbstractCachedRepository<ID, T> {
 
-    private final DatabaseManager databaseManager;
     private final Map<ID, File> fileCache = new ConcurrentHashMap<>();
 
     private final File folder;
@@ -33,8 +25,7 @@ public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends Abstr
 
     private final Gson gson;
 
-    public GenericJsonRepository(DatabaseManager databaseManager, File folder, Class<T> tClass) {
-        this.databaseManager = databaseManager;
+    public GenericJsonRepository(File folder, Class<T> tClass) {
 
         if (!folder.exists()) {
             folder.mkdirs();

@@ -1,8 +1,8 @@
 package fr.robotv2.questplugin.database.loader;
 
-import java.util.concurrent.CompletableFuture;
-
 import org.bukkit.entity.Player;
+
+import java.util.concurrent.CompletableFuture;
 
 public interface PlayerLoader {
 

@@ -12,4 +12,11 @@ public interface ActiveQuestRepository extends Repository<UUID, ActiveQuestDto> 
     CompletableFuture<Void> remove(QuestPlayer questPlayer, QuestGroup group);
 
     CompletableFuture<Void> remove(QuestGroup group);
+
+    CompletableFuture<Void> removeIfEnded(QuestPlayer questPlayer);
+
+    @Override
+    default CompletableFuture<Void> removeFromId(UUID uuid) {
+        throw new RuntimeException("Can't remove active quest from id directly.");
+    }
 }

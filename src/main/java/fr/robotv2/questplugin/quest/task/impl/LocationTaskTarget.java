@@ -2,7 +2,6 @@ package fr.robotv2.questplugin.quest.task.impl;
 
 import fr.robotv2.questplugin.quest.task.Task;
 import fr.robotv2.questplugin.quest.task.TaskTarget;
-import fr.robotv2.questplugin.quest.task.TaskTargets;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;

@@ -5,7 +5,6 @@ import fr.robotv2.questplugin.quest.context.RunningQuestContext;
 import fr.robotv2.questplugin.quest.type.QuestType;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockEvent;
 import org.jetbrains.annotations.NotNull;
 

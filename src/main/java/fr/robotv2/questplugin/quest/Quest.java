@@ -1,6 +1,7 @@
 package fr.robotv2.questplugin.quest;
 
 import fr.robotv2.questplugin.QuestPlugin;
+import fr.robotv2.questplugin.conditions.Condition;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.quest.options.Optionnable;
 import fr.robotv2.questplugin.quest.options.QuestOption;
@@ -11,14 +12,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Quest implements Optionnable {
+
+    private final QuestPlugin plugin;
 
     private final String questId;
 
@@ -32,12 +31,15 @@ public class Quest implements Optionnable {
 
     private final Map<Integer, Task> tasks = new TreeMap<>();
 
+    private final Set<Condition> conditions = new HashSet<>();
+
     public Quest(QuestPlugin plugin, ConfigurationSection section) {
         this(plugin, section.getName(), section);
     }
 
     public Quest(QuestPlugin plugin, String questId, ConfigurationSection section) {
 
+        this.plugin = plugin;
         this.questId = questId;
         this.questSection = section;
         this.questName = section.getString("name");
@@ -45,6 +47,11 @@ public class Quest implements Optionnable {
         this.options = new QuestOption(section.getConfigurationSection("options"));
 
         registerTasks(section.getConfigurationSection("tasks"));
+        registerConditions(section.getConfigurationSection("conditions"));
+    }
+
+    public QuestPlugin getPlugin() {
+        return plugin;
     }
 
     public String getQuestId() {
@@ -57,6 +64,10 @@ public class Quest implements Optionnable {
 
     public String getQuestName() {
         return questName;
+    }
+
+    public Set<Condition> getConditions() {
+        return conditions;
     }
 
     @UnmodifiableView
@@ -105,6 +116,19 @@ public class Quest implements Optionnable {
             final ConfigurationSection taskSection = Objects.requireNonNull(tasksSection.getConfigurationSection(taskId));
             final Task task = new Task(this, taskSection);
             tasks.put(Integer.parseInt(taskId), task);
+        }
+    }
+
+    private void registerConditions(ConfigurationSection conditionsSection) {
+
+        conditions.clear();
+
+        if(conditionsSection == null) {
+            return;
+        }
+
+        for(String key : conditionsSection.getKeys(false)) {
+            plugin.getConditionManager().toInstance(conditionsSection, key).ifPresent(conditions::add);
         }
     }
 

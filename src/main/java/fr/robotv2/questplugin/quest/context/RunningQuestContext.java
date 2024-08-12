@@ -1,6 +1,5 @@
 package fr.robotv2.questplugin.quest.context;
 
-import com.cryptomorin.xseries.XTag;
 import fr.robotv2.questplugin.quest.type.QuestType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;

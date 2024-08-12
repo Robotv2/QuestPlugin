@@ -11,7 +11,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -88,14 +87,6 @@ public class ActiveQuest implements java.io.Serializable, Identifiable<UUID>, Di
 
     public long getNextReset() {
         return nextReset;
-    }
-
-    @ApiStatus.Internal
-    public void addTask(ActiveTask task) {
-        if(tasks == null) {
-            tasks = new HashSet<>();
-        }
-        tasks.add(task);
     }
 
     public Set<ActiveTask> getTasks() {

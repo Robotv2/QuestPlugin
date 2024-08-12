@@ -1,15 +1,17 @@
 package fr.robotv2.questplugin.group;
 
 import fr.robotv2.questplugin.QuestPlugin;
+import fr.robotv2.questplugin.api.cron.ICronJob;
+import fr.robotv2.questplugin.api.group.IQuestGroup;
 import fr.robotv2.questplugin.cron.CronJob;
 import fr.robotv2.questplugin.quest.options.QuestOption;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.*;
 
-public class QuestGroup {
+public class QuestGroup implements IQuestGroup {
 
     private final String groupId;
 
@@ -17,7 +19,7 @@ public class QuestGroup {
 
     private final String cronSyntax;
 
-    @Nullable private CronJob cronJob;
+    private final ICronJob cronJob;
 
     private final int globalAssignation;
 
@@ -51,39 +53,39 @@ public class QuestGroup {
         }
     }
 
+    @Override
     public String getGroupId() {
         return groupId;
     }
 
+    @Override
     public QuestOption getOption() {
         return option;
     }
 
+    @Override
     public String getCronSyntax() {
         return cronSyntax;
     }
 
-    @Nullable
-    public CronJob getCronJob() {
+    @Override
+    public @Nullable ICronJob getCronJob() {
         return cronJob;
     }
 
-    public void stopCronJob() {
-        if(getCronJob() != null) {
-            getCronJob().stop();
-        }
-    }
-
-    public long getNextReset() {
-        return getCronJob() != null ? getCronJob().getNextExecution() : -1;
-    }
-
+    @Override
     public int getGlobalAssignation() {
         return globalAssignation;
     }
 
+    @Override
     public OptionalInt getRoleAssignation(String role) {
         return assignations.containsKey(role.toLowerCase()) ? OptionalInt.of(assignations.get(role.toLowerCase())) : OptionalInt.empty();
+    }
+
+    @Override
+    public @UnmodifiableView Map<String, Integer> getRoleAssignations() {
+        return Collections.unmodifiableMap(assignations);
     }
 
     @Override

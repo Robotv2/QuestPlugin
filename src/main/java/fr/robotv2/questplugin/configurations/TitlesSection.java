@@ -1,9 +1,17 @@
 package fr.robotv2.questplugin.configurations;
 
+import com.cryptomorin.xseries.messages.Titles;
+import fr.robotv2.questplugin.api.configurations.PlayerSendable;
+import fr.robotv2.questplugin.util.placeholder.PlaceholderSupport;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
-public class TitlesSection {
+import java.util.function.Function;
+
+public class TitlesSection extends PlaceholderSupport<TitlesSection> implements PlayerSendable {
 
     public static final TitlesSection EMPTY = new TitlesSection(null);
 
@@ -33,6 +41,16 @@ public class TitlesSection {
         }
     }
 
+    @ApiStatus.Internal
+    protected TitlesSection(boolean enabled, @Nullable String title, @Nullable String subtitle, int fadeIn, int stay, int fadeOut) {
+        this.enabled = enabled;
+        this.title = title;
+        this.subtitle = subtitle;
+        this.fadeIn = fadeIn;
+        this.stay = stay;
+        this.fadeOut = fadeOut;
+    }
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -55,5 +73,28 @@ public class TitlesSection {
 
     public int getFadeOut() {
         return fadeOut;
+    }
+
+    @Override
+    public void send(Player player) {
+
+        if(!isEnabled()) {
+            return;
+        }
+
+        Titles.sendTitle(player, getFadeIn(), getStay(), getFadeOut(), getTitle(), getSubtitle());
+    }
+
+    @Override
+    @Contract("_ -> new")
+    public TitlesSection apply(Function<String, String> replaceFunction) {
+        return new TitlesSection(
+                enabled,
+                title != null ? replaceFunction.apply(title) : null,
+                subtitle != null ? replaceFunction.apply(subtitle) : null,
+                fadeIn,
+                stay,
+                fadeOut
+        );
     }
 }

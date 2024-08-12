@@ -7,7 +7,10 @@ import fr.robotv2.questplugin.storage.model.ActiveQuest;
 import fr.robotv2.questplugin.storage.model.QuestPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import revxrsal.commands.annotation.*;
+import revxrsal.commands.annotation.Command;
+import revxrsal.commands.annotation.Default;
+import revxrsal.commands.annotation.DefaultFor;
+import revxrsal.commands.annotation.Subcommand;
 import revxrsal.commands.bukkit.BukkitCommandActor;
 import revxrsal.commands.bukkit.annotation.CommandPermission;
 
@@ -20,7 +23,7 @@ public class QuestPluginMainCommand {
         this.plugin = plugin;
     }
 
-    @DefaultFor("rtq|robottimedquest")
+    @DefaultFor({"betterdailyquest", "bdq"})
     public void onDefault(BukkitCommandActor actor) {
         actor.getSender().sendMessage(ChatColor.GREEN + "This server is using BetterDailyQuest with version " + plugin.getDescription().getVersion() + ".");
     }

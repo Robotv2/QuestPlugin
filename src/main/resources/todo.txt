@@ -1,6 +1,4 @@
 Things remaining:
 
-- Placeholders
-- Parse them in cosmetics
 - do all the quest types (rip)
 
