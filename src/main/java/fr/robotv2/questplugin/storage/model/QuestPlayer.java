@@ -20,23 +20,26 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, Di
 
     private String playerName;
 
-    private transient Set<ActiveQuest> activeQuests;
+    private Set<ActiveQuest> activeQuests;
+
+    private Map<String, Integer> questDone;
 
     private transient boolean dirty;
 
     public QuestPlayer(Player player) {
-        this(player.getUniqueId(), player.getName(), new HashSet<>());
+        this(player.getUniqueId(), player.getName(), new HashSet<>(), new HashMap<>());
     }
 
     @ApiStatus.Internal
     public QuestPlayer(QuestPlayerDto dto, Set<ActiveQuest> quests) {
-        this(dto.getId(), dto.getPlayerName(), quests);
+        this(dto.getId(), dto.getPlayerName(), quests, dto.getQuestDone());
     }
 
-    public QuestPlayer(UUID uniqueId, String playerName, Set<ActiveQuest> quests) {
+    public QuestPlayer(UUID uniqueId, String playerName, Set<ActiveQuest> quests, Map<String, Integer> questDone) {
         this.playerUniqueId = uniqueId;
         this.playerName = playerName;
         this.activeQuests = quests;
+        this.questDone = questDone;
     }
 
     @Override
@@ -78,13 +81,23 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, Di
         setDirty(true);
     }
 
-    public void removeActiveQuest(String groupId) {
-        boolean result = this.activeQuests.removeIf(quest -> quest.getGroupId().equalsIgnoreCase(groupId));
-        if(result) setDirty(true);
+    public void removeActiveQuest(Quest quest) {
+        this.activeQuests.removeIf((active) -> {
+            return active.getQuestId().equals(quest.getQuestId());
+        });
+    }
+
+    public void removeActiveQuestByQuestId(String questId) {
+        this.activeQuests.removeIf((active) -> active.getQuestId().equals(questId));
     }
 
     public void removeActiveQuest(QuestGroup group) {
-        removeActiveQuest(group.getGroupId());
+        boolean result = this.activeQuests.removeIf(quest -> quest.getGroupId().equalsIgnoreCase(group.getGroupId()));
+        if(result) setDirty(true);
+    }
+
+    public void removeActiveQuestByGroupId(String groupId) {
+        this.activeQuests.removeIf((active) -> active.getGroupId().equals(groupId));
     }
 
     public void clearActiveQuests() {
@@ -96,6 +109,10 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, Di
         return getActiveQuests().stream()
                 .anyMatch(other -> Objects.equals(quest.getQuestId(), other.getQuestId())
                         && Objects.equals(quest.getQuestGroup().getGroupId(), other.getGroupId()));
+    }
+
+    public Map<String, Integer> getQuestDone() {
+        return questDone;
     }
 
     @Override

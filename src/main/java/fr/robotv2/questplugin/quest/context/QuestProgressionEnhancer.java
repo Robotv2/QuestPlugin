@@ -4,6 +4,7 @@ import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.conditions.Condition;
 import fr.robotv2.questplugin.event.QuestDoneEvent;
 import fr.robotv2.questplugin.event.QuestIncrementEvent;
+import fr.robotv2.questplugin.event.TaskDoneEvent;
 import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.options.Optionnable;
 import fr.robotv2.questplugin.quest.task.Task;
@@ -38,7 +39,6 @@ public abstract class QuestProgressionEnhancer implements Listener {
     }
 
     public void updateQuestProgressFor(ActiveQuest activeQuest, RunningQuestContext<?, ?> context) {
-
         final Quest quest = plugin.getQuestManager().fromId(activeQuest.getQuestId(), activeQuest.getGroupId());
 
         if(quest == null) {
@@ -93,6 +93,7 @@ public abstract class QuestProgressionEnhancer implements Listener {
             if(activeTask.getProgress().compareTo(task.getRequiredAmount()) >= 0) {
 
                 activeTask.setDone(true);
+                Bukkit.getPluginManager().callEvent(new TaskDoneEvent(context.getInitiator(), quest, task, activeTask));
 
                 if(activeQuest.isDone()) {
                     Bukkit.getPluginManager().callEvent(new QuestDoneEvent(quest, activeQuest, context.getInitiator()));

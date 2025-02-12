@@ -40,6 +40,10 @@
                             <pattern>it.sauronsoftware.cron4j</pattern>
                             <shadedPattern>fr.robotv2.questplugin.cron</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>revxrsal.commands</pattern>
+                            <shadedPattern>fr.robotv2.questplugin.lamp</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
@@ -116,6 +120,12 @@
             <groupId>com.github.Revxrsal.Lamp</groupId>
             <artifactId>bukkit</artifactId>
             <version>3.2.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>4.8.157</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

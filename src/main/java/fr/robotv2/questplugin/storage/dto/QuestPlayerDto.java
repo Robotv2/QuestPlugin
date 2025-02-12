@@ -5,6 +5,7 @@ import fr.robotv2.questplugin.storage.model.ActiveQuest;
 import fr.robotv2.questplugin.storage.model.QuestPlayer;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -16,18 +17,22 @@ public class QuestPlayerDto implements Identifiable<UUID> {
 
     private final List<UUID> activeQuests;
 
+    private final Map<String, Integer> questDone;
+
     public QuestPlayerDto(QuestPlayer questPlayer) {
         this(
                 questPlayer.getId(),
                 questPlayer.getPlayerName(),
-                questPlayer.getActiveQuests().stream().map(ActiveQuest::getId).collect(Collectors.toList())
+                questPlayer.getActiveQuests().stream().map(ActiveQuest::getId).collect(Collectors.toList()),
+                questPlayer.getQuestDone()
         );
     }
 
-    public QuestPlayerDto(UUID playerUniqueId, String playerName, List<UUID> activeQuests) {
+    public QuestPlayerDto(UUID playerUniqueId, String playerName, List<UUID> activeQuests, Map<String, Integer> questDone) {
         this.playerUniqueId = playerUniqueId;
         this.playerName = playerName;
         this.activeQuests = activeQuests;
+        this.questDone = questDone;
     }
 
     @Override
@@ -41,5 +46,9 @@ public class QuestPlayerDto implements Identifiable<UUID> {
 
     public List<UUID> getActiveQuests() {
         return activeQuests;
+    }
+
+    public Map<String, Integer> getQuestDone() {
+        return questDone;
     }
 }

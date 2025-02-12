@@ -53,4 +53,35 @@ public class QuestPluginMainCommand {
         questPlayer.addActiveQuest(new ActiveQuest(target, quest));
         actor.getSender().sendMessage(ChatColor.GREEN + "The quest '" + quest.getQuestId() + "' has successfully been given to the player '" + target.getName() + "'.");
     }
+
+    @Subcommand("reroll")
+    @CommandPermission("betterdailyquest.command.reroll")
+    public void onReroll(BukkitCommandActor actor, QuestGroup group, Quest quest, @Default("me") Player target) {
+        final QuestPlayer questPlayer = plugin.getDatabaseManager().getCachedQuestPlayer(target);
+
+        if(questPlayer == null) {
+            actor.getSender().sendMessage(ChatColor.RED + "The player is not connected or is not loaded.");
+            return;
+        }
+
+        if(!questPlayer.hasQuest(quest)) {
+            actor.getSender().sendMessage(ChatColor.RED + "The target does not have this quest.");
+            return;
+        }
+
+        if (actor.isPlayer() && !actor.requirePlayer().hasPermission("betterdailyquest.command.reroll.others")) {
+            actor.getSender().sendMessage(ChatColor.RED + "You do not have permission to reroll quests for other players.");
+            return;
+        }
+
+        final Quest newQuest = plugin.getQuestManager().getRandomQuest(questPlayer, group);
+        if(newQuest == null) {
+            actor.getSender().sendMessage(ChatColor.RED + "No quest available for reroll.");
+            return;
+        }
+
+        questPlayer.removeActiveQuest(quest);
+        questPlayer.addActiveQuest(new ActiveQuest(target, newQuest));
+        actor.getSender().sendMessage(ChatColor.GREEN + "The quest '" + quest.getQuestId() + "' has successfully been rerolled for the player '" + target.getName() + "'.");
+    }
 }

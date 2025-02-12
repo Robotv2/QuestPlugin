@@ -1,16 +1,14 @@
 package fr.robotv2.questplugin;
 
-import fr.robotv2.questplugin.database.InternalDatabaseManager;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.options.Optionnable;
-import fr.robotv2.questplugin.storage.dto.GlobalQuestDto;
 import fr.robotv2.questplugin.storage.model.ActiveQuest;
-import fr.robotv2.questplugin.storage.model.GlobalQuest;
 import fr.robotv2.questplugin.storage.model.QuestPlayer;
 import fr.robotv2.questplugin.util.GroupUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -37,11 +35,6 @@ public class QuestResetHandler {
             return null;
         });
 
-        if(group.getOption().getOptionValue(Optionnable.Option.GLOBAL)) {
-            final Set<Quest> random = plugin.getQuestManager().getNRandomQuests(group, group.getGlobalAssignation());
-            // todo
-        }
-
         if(!group.getOption().getOptionValue(Optionnable.Option.AUTOMATICALLY_GIVEN)) {
             return;
         }
@@ -59,7 +52,6 @@ public class QuestResetHandler {
     }
 
     public int fillPlayer(QuestPlayer questPlayer) {
-
         int amount = 0;
 
         for(QuestGroup group : plugin.getQuestGroupManager().getGroups()) {
@@ -74,21 +66,10 @@ public class QuestResetHandler {
      * @return the number of quest added
      */
     public int fillPlayer(QuestPlayer questPlayer, QuestGroup group) {
-
-        if(group.getOption().getOptionValue(Optionnable.Option.GLOBAL)) {
-            final Set<Quest> quests = plugin.getDatabaseManager().getGlobalQuestRepository().selectAll(group)
-                    .join() // they will be cached so this is fine.
-                    .stream()
-                    .map((dto) -> plugin.getQuestManager().fromId(dto.getQuestId(), dto.getGroupId()))
-                    .filter(Objects::nonNull)
-                    .filter((quest) -> !questPlayer.hasQuest(quest))
-                    .collect(Collectors.toSet());
-            quests.forEach((quest) -> questPlayer.addActiveQuest(new ActiveQuest(questPlayer.getPlayer(), quest)));
-            return quests.size();
-        }
-
         final int required = getPlayerLimit(questPlayer, group);
         final int current = questPlayer.getActiveQuests(group).size();
+
+        QuestPlugin.debug("Player " + questPlayer.getPlayer().getName() + " has " + current + " quest(s) in group " + group.getGroupId() + " and need " + required + " quest(s).");
 
         if(required != 0 && required > current) {
             final int diff = required - current;
@@ -106,7 +87,6 @@ public class QuestResetHandler {
      * @return the number of quests given
      */
     public int fillPlayer(QuestPlayer questPlayer, QuestGroup group, int amount) {
-
         final List<Quest> quests = new ArrayList<>();
         final int max = plugin.getQuestManager().getQuests(group).size();
 
@@ -116,7 +96,7 @@ public class QuestResetHandler {
                 break;
             }
 
-            final Quest random = plugin.getQuestManager().getRandomQuest(group);
+            final Quest random = plugin.getQuestManager().getRandomQuest(questPlayer, group);
 
             if(random == null) {
                 break; //There is no quest available for this delay.

@@ -1,4 +1,4 @@
-package fr.robotv2.questplugin.database;
+package fr.robotv2.questplugin.storage;
 
 public enum DatabaseType {
 

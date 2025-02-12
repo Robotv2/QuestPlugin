@@ -1,5 +1,6 @@
 package fr.robotv2.questplugin.storage.model;
 
+import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.enums.QuestStatus;
 import fr.robotv2.questplugin.quest.options.Optionnable;
@@ -83,6 +84,11 @@ public class ActiveQuest implements java.io.Serializable, Identifiable<UUID>, Di
 
     public String getGroupId() {
         return groupId;
+    }
+
+    @Nullable
+    public Quest getQuest() {
+        return QuestPlugin.instance().getQuestManager().fromId(questId, groupId);
     }
 
     public long getNextReset() {

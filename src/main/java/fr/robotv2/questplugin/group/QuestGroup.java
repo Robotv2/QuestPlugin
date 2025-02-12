@@ -1,17 +1,19 @@
 package fr.robotv2.questplugin.group;
 
 import fr.robotv2.questplugin.QuestPlugin;
-import fr.robotv2.questplugin.api.cron.ICronJob;
-import fr.robotv2.questplugin.api.group.IQuestGroup;
 import fr.robotv2.questplugin.cron.CronJob;
 import fr.robotv2.questplugin.quest.options.QuestOption;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.OptionalInt;
 
-public class QuestGroup implements IQuestGroup {
+public class QuestGroup {
 
     private final String groupId;
 
@@ -19,7 +21,7 @@ public class QuestGroup implements IQuestGroup {
 
     private final String cronSyntax;
 
-    private final ICronJob cronJob;
+    private final CronJob cronJob;
 
     private final int globalAssignation;
 
@@ -53,37 +55,44 @@ public class QuestGroup implements IQuestGroup {
         }
     }
 
-    @Override
+
     public String getGroupId() {
         return groupId;
     }
 
-    @Override
+
     public QuestOption getOption() {
         return option;
     }
 
-    @Override
+
     public String getCronSyntax() {
         return cronSyntax;
     }
 
-    @Override
-    public @Nullable ICronJob getCronJob() {
+    public @Nullable CronJob getCronJob() {
         return cronJob;
     }
 
-    @Override
+    public void stopCronJob() {
+        if(cronJob != null) {
+            cronJob.stop();
+        }
+    }
+
+    public long getNextReset() {
+        return cronJob != null ? cronJob.getNextExecution() : -1;
+    }
+
     public int getGlobalAssignation() {
         return globalAssignation;
     }
 
-    @Override
     public OptionalInt getRoleAssignation(String role) {
         return assignations.containsKey(role.toLowerCase()) ? OptionalInt.of(assignations.get(role.toLowerCase())) : OptionalInt.empty();
     }
 
-    @Override
+
     public @UnmodifiableView Map<String, Integer> getRoleAssignations() {
         return Collections.unmodifiableMap(assignations);
     }

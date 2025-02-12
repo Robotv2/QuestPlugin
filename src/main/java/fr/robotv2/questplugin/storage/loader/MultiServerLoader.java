@@ -1,4 +1,4 @@
-package fr.robotv2.questplugin.database.loader;
+package fr.robotv2.questplugin.storage.loader;
 
 import java.util.UUID;
 

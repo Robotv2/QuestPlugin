@@ -4,6 +4,8 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.group.QuestGroup;
+import fr.robotv2.questplugin.quest.options.Optionnable;
+import fr.robotv2.questplugin.storage.model.QuestPlayer;
 import fr.robotv2.questplugin.util.FileUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -50,6 +52,24 @@ public class QuestManager {
     public Quest getRandomQuest(QuestGroup group) {
 
         final List<Quest> quests = this.getQuests(group);
+        final int size = quests.size();
+
+        if(quests.isEmpty()) {
+            return null; // no quest for this reset id.
+        }
+
+        return quests.get(QUEST_RANDOM.nextInt(size));
+    }
+
+    @Nullable
+    public Quest getRandomQuest(QuestPlayer player, QuestGroup group) {
+        final List<Quest> quests = new ArrayList<>(this.getQuests(group));
+
+        // remove all quest that the player has already done and are not repeatable
+        quests.removeIf((quest) -> player.getQuestDone().containsKey(quest.getQuestId()) && !quest.getOptionValue(Optionnable.Option.REPEATABLE));
+        // do not check if the player already has this quest
+        quests.removeIf(player::hasQuest);
+
         final int size = quests.size();
 
         if(quests.isEmpty()) {

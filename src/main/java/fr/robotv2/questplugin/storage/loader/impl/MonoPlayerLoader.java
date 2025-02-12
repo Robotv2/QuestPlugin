@@ -1,8 +1,8 @@
-package fr.robotv2.questplugin.database.loader.impl;
+package fr.robotv2.questplugin.storage.loader.impl;
 
 import fr.robotv2.questplugin.QuestPlugin;
-import fr.robotv2.questplugin.database.InternalDatabaseManager;
-import fr.robotv2.questplugin.database.loader.PlayerLoader;
+import fr.robotv2.questplugin.storage.InternalDatabaseManager;
+import fr.robotv2.questplugin.storage.loader.PlayerLoader;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

@@ -19,6 +19,7 @@ public class QuestPluginConfiguration {
         this.cosmetics = new HashMap<>();
         this.cosmetics.put("quest_increment", new ActionBarTitlesSection(configuration.getConfigurationSection("cosmetics.quest_increment")));
         this.cosmetics.put("quest_done", new ActionBarTitlesSection(configuration.getConfigurationSection("cosmetics.quest_done")));
+        this.cosmetics.put("task_done", new ActionBarTitlesSection(configuration.getConfigurationSection("cosmetics.task_done")));
     }
 
     public boolean isDebug() {
@@ -31,5 +32,9 @@ public class QuestPluginConfiguration {
 
     public ActionBarTitlesSection getQuestDoneCosmetics() {
         return cosmetics.get("quest_done");
+    }
+
+    public ActionBarTitlesSection getTaskDoneCosmetics() {
+        return cosmetics.get("task_done");
     }
 }

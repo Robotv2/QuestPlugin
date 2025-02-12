@@ -1,6 +1,5 @@
 package fr.robotv2.questplugin.configurations;
 
-import fr.robotv2.questplugin.api.configurations.PlayerSendable;
 import fr.robotv2.questplugin.util.placeholder.PlaceholderSupport;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;

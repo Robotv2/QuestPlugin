@@ -1,5 +1,6 @@
 package fr.robotv2.questplugin.storage.model;
 
+import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.task.Task;
 import fr.robotv2.questplugin.storage.DirtyAware;
@@ -102,6 +103,10 @@ public class ActiveTask implements java.io.Serializable, Identifiable<UUID>, Dir
 
     public int getTaskId() {
         return taskId;
+    }
+
+    public Task getTask() {
+        return QuestPlugin.instance().getQuestManager().fromId(parentQuestId, parentQuestGroupId).getTask(taskId);
     }
 
     public BigDecimal getProgress() {

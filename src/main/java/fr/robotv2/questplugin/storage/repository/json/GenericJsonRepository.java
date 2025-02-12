@@ -1,13 +1,16 @@
 package fr.robotv2.questplugin.storage.repository.json;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.storage.Identifiable;
 import fr.robotv2.questplugin.storage.repository.AbstractCachedRepository;
 
-import java.io.*;
-import java.lang.reflect.Modifier;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +26,6 @@ public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends Abstr
     private final File folder;
     private final Class<T> tClass;
 
-    private final Gson gson;
-
     public GenericJsonRepository(File folder, Class<T> tClass) {
 
         if (!folder.exists()) {
@@ -33,13 +34,6 @@ public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends Abstr
 
         this.folder = folder;
         this.tClass = tClass;
-
-        this.gson = new GsonBuilder()
-                .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC)
-                .setPrettyPrinting()
-                .serializeNulls()
-                .enableComplexMapKeySerialization()
-                .create();
     }
 
     @Override
@@ -145,13 +139,13 @@ public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends Abstr
 
     private T fromFile(File file, Class<T> tClass) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            return gson.fromJson(reader, tClass);
+            return GsonHolder.GSON.fromJson(reader, tClass);
         }
     }
 
     private void writeToFile(File file, T value) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            gson.toJson(value, writer);
+            GsonHolder.GSON.toJson(value, writer);
         }
     }
 }

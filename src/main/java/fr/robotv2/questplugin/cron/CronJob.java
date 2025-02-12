@@ -1,14 +1,13 @@
 package fr.robotv2.questplugin.cron;
 
 import fr.robotv2.questplugin.QuestPlugin;
-import fr.robotv2.questplugin.api.cron.ICronJob;
 import it.sauronsoftware.cron4j.Predictor;
 import it.sauronsoftware.cron4j.Scheduler;
 import org.bukkit.Bukkit;
 
 import java.util.TimeZone;
 
-public class CronJob implements ICronJob {
+public class CronJob {
 
     private final Scheduler scheduler;
 
@@ -26,7 +25,6 @@ public class CronJob implements ICronJob {
         calculateNextExecution();
     }
 
-    @Override
     public void prepare() {
 
         if(scheduler.isStarted()) {
@@ -39,21 +37,18 @@ public class CronJob implements ICronJob {
         });
     }
 
-    @Override
     public void start() {
         if(!scheduler.isStarted()) {
             scheduler.start();
         }
     }
 
-    @Override
     public void stop() {
         if(scheduler.isStarted()) {
             scheduler.stop();
         }
     }
 
-    @Override
     public long getNextExecution() {
         return nextExecution;
     }

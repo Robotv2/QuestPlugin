@@ -1,21 +1,20 @@
 package fr.robotv2.questplugin.quest.options;
 
+import com.google.common.collect.ImmutableMap;
+
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public interface Optionnable {
 
-    Map<Option, Boolean> DEFAULT = createDefaultMap();
-
-    static Map<Option, Boolean> createDefaultMap() {
-        Map<Option, Boolean> defaultMap = new EnumMap<>(Option.class);
-        defaultMap.put(Option.DEPENDANT_TASK, Boolean.FALSE);
-        defaultMap.put(Option.GLOBAL, Boolean.FALSE);
-        defaultMap.put(Option.NEED_STARTING, Boolean.FALSE);
-        defaultMap.put(Option.AUTOMATICALLY_GIVEN, Boolean.TRUE);
-        return Collections.unmodifiableMap(defaultMap);
-    }
+    Map<Option, Boolean> DEFAULT = ImmutableMap.<Option, Boolean>builder()
+            .put(Option.DEPENDANT_TASK, Boolean.FALSE)
+            .put(Option.NEED_STARTING, Boolean.FALSE)
+            .put(Option.AUTOMATICALLY_GIVEN, Boolean.TRUE)
+            .put(Option.REPEATABLE, Boolean.FALSE)
+            .build();
 
     /**
      * Gets the default value for the specified option.
@@ -30,8 +29,8 @@ public interface Optionnable {
     enum Option {
         DEPENDANT_TASK, // group & individual
         NEED_STARTING, // group & individual
-        GLOBAL, // group only
         AUTOMATICALLY_GIVEN, // group only
+        REPEATABLE, // group & individual
         ;
     }
 

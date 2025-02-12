@@ -1,7 +1,6 @@
 package fr.robotv2.questplugin.storage.repository.json;
 
-import fr.robotv2.questplugin.api.database.IDatabaseManager;
-import fr.robotv2.questplugin.database.InternalDatabaseManager;
+import fr.robotv2.questplugin.storage.InternalDatabaseManager;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.storage.dto.ActiveQuestDto;
 import fr.robotv2.questplugin.storage.model.ActiveQuest;
@@ -18,9 +17,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class ActiveQuestJsonRepository extends GenericJsonRepository<UUID, ActiveQuestDto> implements ActiveQuestRepository {
 
-    private final IDatabaseManager databaseManager;
+    private final InternalDatabaseManager databaseManager;
 
-    public ActiveQuestJsonRepository(IDatabaseManager manager, File folder) {
+    public ActiveQuestJsonRepository(InternalDatabaseManager manager, File folder) {
         super(folder, ActiveQuestDto.class);
         this.databaseManager = manager;
     }
@@ -71,5 +70,12 @@ public class ActiveQuestJsonRepository extends GenericJsonRepository<UUID, Activ
         }
 
         return Futures.ofAll(futures);
+    }
+
+    @Override
+    public CompletableFuture<Void> removeFromId(UUID uuid) {
+        return select(uuid)
+                .thenAccept((optional) -> optional.ifPresent(this::removeFromDataSource))
+                .thenCompose((unused) -> super.removeFromId(uuid));
     }
 }

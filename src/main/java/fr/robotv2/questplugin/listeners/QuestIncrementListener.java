@@ -3,6 +3,7 @@ package fr.robotv2.questplugin.listeners;
 import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.event.QuestDoneEvent;
 import fr.robotv2.questplugin.event.QuestIncrementEvent;
+import fr.robotv2.questplugin.event.TaskDoneEvent;
 import fr.robotv2.questplugin.util.placeholder.Placeholders;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,6 +19,14 @@ public class QuestIncrementListener implements Listener {
     @EventHandler
     public void onIncrement(QuestIncrementEvent event) {
         plugin.getQuestConfiguration().getQuestIncrementCosmetics()
+                .apply(Placeholders.ACTIVE_TASK_PLACEHOLDER, event.getActiveTask())
+                .color()
+                .send(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onTaskDone(TaskDoneEvent event) {
+        plugin.getQuestConfiguration().getTaskDoneCosmetics()
                 .apply(Placeholders.ACTIVE_TASK_PLACEHOLDER, event.getActiveTask())
                 .color()
                 .send(event.getPlayer());

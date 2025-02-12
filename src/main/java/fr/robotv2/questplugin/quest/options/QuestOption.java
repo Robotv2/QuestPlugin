@@ -20,9 +20,9 @@ public class QuestOption implements Optionnable {
             options.put(Option.DEPENDANT_TASK, section.getBoolean("dependant-tasks"));
         }
 
-        if(section.isBoolean("global")) {
-            options.put(Option.GLOBAL, section.getBoolean("global"));
-        }
+//        if(section.isBoolean("global")) {
+//             options.put(Option.GLOBAL, section.getBoolean("global"));
+//        }
 
         if(section.isBoolean("automatically-given")) {
             options.put(Option.AUTOMATICALLY_GIVEN, section.getBoolean("automatically-given"));
@@ -30,6 +30,10 @@ public class QuestOption implements Optionnable {
 
         if(section.isBoolean("need-starting")) {
             options.put(Option.NEED_STARTING, section.getBoolean("need-starting"));
+        }
+
+        if(section.isBoolean("repeatable")) {
+            options.put(Option.REPEATABLE, section.getBoolean("repeatable"));
         }
     }
 

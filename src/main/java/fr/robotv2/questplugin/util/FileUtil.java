@@ -10,7 +10,6 @@ public class FileUtil {
     }
 
     public static void iterateFiles(File initial, Consumer<File> consumer) {
-
         if(!initial.exists()) {
             return;
         }
