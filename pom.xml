@@ -128,5 +128,11 @@
             <version>4.8.157</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.Maxlego08</groupId>
+            <artifactId>Sarah</artifactId>
+            <version>1.14</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

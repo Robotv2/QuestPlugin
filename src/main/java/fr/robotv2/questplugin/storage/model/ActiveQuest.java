@@ -1,5 +1,6 @@
 package fr.robotv2.questplugin.storage.model;
 
+import fr.maxlego08.sarah.Column;
 import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.enums.QuestStatus;
@@ -28,9 +29,9 @@ public class ActiveQuest implements java.io.Serializable, Identifiable<UUID>, Di
 
     private long nextReset;
 
-    private transient Set<ActiveTask> tasks;
-
     private boolean started;
+
+    private transient Set<ActiveTask> tasks;
 
     private transient boolean dirty;
 

@@ -1,5 +1,6 @@
 package fr.robotv2.questplugin.storage.dto;
 
+import fr.maxlego08.sarah.Column;
 import fr.robotv2.questplugin.storage.Identifiable;
 import fr.robotv2.questplugin.storage.model.ActiveQuest;
 import fr.robotv2.questplugin.storage.model.ActiveTask;
@@ -10,18 +11,25 @@ import java.util.stream.Collectors;
 
 public class ActiveQuestDto implements Identifiable<UUID> {
 
+    @Column("id")
     private final UUID activeQuestUniqueId;
 
+    @Column("owner")
     private final UUID owner;
 
+    @Column("quest_id")
     private final String questId;
 
+    @Column("group_id")
     private final String groupId;
 
+    @Column("next_reset")
     private final long nextReset;
 
+    @Column("active_tasks")
     private final List<UUID> activeTasks;
 
+    @Column("started")
     private final boolean started;
 
     public ActiveQuestDto(ActiveQuest activeQuest) {

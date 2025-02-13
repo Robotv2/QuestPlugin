@@ -1,6 +1,6 @@
 package fr.robotv2.questplugin.storage.repository.json;
 
-import fr.robotv2.questplugin.storage.InternalDatabaseManager;
+import fr.robotv2.questplugin.storage.DatabaseManager;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.storage.dto.ActiveQuestDto;
 import fr.robotv2.questplugin.storage.model.ActiveQuest;
@@ -17,9 +17,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class ActiveQuestJsonRepository extends GenericJsonRepository<UUID, ActiveQuestDto> implements ActiveQuestRepository {
 
-    private final InternalDatabaseManager databaseManager;
+    private final DatabaseManager databaseManager;
 
-    public ActiveQuestJsonRepository(InternalDatabaseManager manager, File folder) {
+    public ActiveQuestJsonRepository(DatabaseManager manager, File folder) {
         super(folder, ActiveQuestDto.class);
         this.databaseManager = manager;
     }

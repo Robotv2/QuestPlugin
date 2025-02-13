@@ -104,10 +104,16 @@ public abstract class AbstractCachedRepository<ID, T extends Identifiable<ID>> i
 
     // Abstract methods to be implemented by subclasses for actual data source operations
     protected abstract CompletableFuture<Optional<T>> selectFromDataSource(ID id);
+
     protected abstract CompletableFuture<List<T>> selectAllFromDataSource();
+
     protected abstract CompletableFuture<Void> insertIntoDataSource(T value);
+
     protected abstract CompletableFuture<Void> updateInDataSource(ID id, T value);
+
     protected abstract CompletableFuture<Void> upsertInDataSource(T value);
+
     protected abstract CompletableFuture<Void> removeFromDataSource(T value);
+
     protected abstract CompletableFuture<Void> removeFromIdInDataSource(ID id);
 }

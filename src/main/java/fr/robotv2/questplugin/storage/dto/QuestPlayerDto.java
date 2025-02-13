@@ -1,5 +1,6 @@
 package fr.robotv2.questplugin.storage.dto;
 
+import fr.maxlego08.sarah.Column;
 import fr.robotv2.questplugin.storage.Identifiable;
 import fr.robotv2.questplugin.storage.model.ActiveQuest;
 import fr.robotv2.questplugin.storage.model.QuestPlayer;
@@ -11,12 +12,16 @@ import java.util.stream.Collectors;
 
 public class QuestPlayerDto implements Identifiable<UUID> {
 
+    @Column("uuid")
     private final UUID playerUniqueId;
 
+    @Column("name")
     private final String playerName;
 
+    @Column("active_quests")
     private final List<UUID> activeQuests;
 
+    @Column("quest_done")
     private final Map<String, Integer> questDone;
 
     public QuestPlayerDto(QuestPlayer questPlayer) {
