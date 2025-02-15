@@ -68,10 +68,7 @@ public class AddonManager {
                 final Class<? extends Addon> addonClass = addonClasses.get(0);
                 final Addon addon = addonClass.newInstance();
                 addons.add(addon);
-                QuestPlugin.logger().info("Loaded " + addon.getName() + " (" + addon.getVersion() + ") has been loaded successfully.");
-
-                // get and load all non-class resources
-                // final ResourceList resources = result.getAllResources().nonClassFilesOnly();
+                QuestPlugin.logger().info("Addon " + addon.getName() + " (" + addon.getVersion() + ") has been loaded successfully.");
 
                 result.close();
 

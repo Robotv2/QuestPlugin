@@ -11,6 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -24,11 +25,11 @@ public class QuestResetHandler {
 
     public void reset(QuestGroup group) {
 
-        for (QuestPlayer questPlayer : plugin.getDatabaseManager().getCachedQuestPlayers()) {
+        for (QuestPlayer questPlayer : plugin.getDatabaseManager().getCachedPlayers()) {
             questPlayer.removeActiveQuest(group);
         }
 
-        plugin.getDatabaseManager().getActiveQuestRepository().remove(group).thenRun(() -> {
+        plugin.getDatabaseManager().removeQuests(group).thenRun(() -> {
             plugin.getLogger().info("All stored quest in group " + group.getGroupId() + " have been successfully removed.");
         }).exceptionally((throwable) -> {
             plugin.getLogger().log(Level.SEVERE, "An error occurred while deleting stored quests from storage.", throwable);
@@ -39,7 +40,7 @@ public class QuestResetHandler {
             return;
         }
 
-        plugin.getDatabaseManager().getCachedQuestPlayers().forEach((questPlayer) -> fillPlayer(questPlayer, group));
+        plugin.getDatabaseManager().getCachedPlayers().forEach((questPlayer) -> fillPlayer(questPlayer, group));
     }
 
     private int getRoleLimit(String role, QuestGroup group, int defaultValue) {

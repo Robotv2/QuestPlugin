@@ -18,7 +18,9 @@ public abstract class Addon {
 
     public void onLoad() {}
 
-    public void onEnable() {}
+    public void onPreEnable() {}
+
+    public void onPostEnable() {}
 
     public void onDisable() {}
 

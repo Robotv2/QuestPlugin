@@ -1,6 +1,7 @@
 package fr.robotv2.questplugin.storage;
 
 import fr.robotv2.questplugin.QuestPlugin;
+import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.storage.dto.ActiveQuestDto;
 import fr.robotv2.questplugin.storage.dto.ActiveTaskDto;
 import fr.robotv2.questplugin.storage.dto.QuestPlayerDto;
@@ -50,7 +51,6 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
         getQuestPlayerRepository().init();
         getActiveQuestRepository().init();
         getActiveTaskRepository().init();
-        getGlobalQuestRepository().init();
     }
 
     @Override
@@ -58,7 +58,6 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
         getQuestPlayerRepository().close();
         getActiveQuestRepository().close();
         getActiveTaskRepository().close();
-        getGlobalQuestRepository().close();
     }
 
     @Override
@@ -142,5 +141,49 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
     @UnmodifiableView
     public Collection<QuestPlayer> getCachedPlayers() {
         return Collections.unmodifiableCollection(cache.values());
+    }
+
+    @Override
+    public CompletableFuture<Void> removeQuests(QuestGroup group) {
+        return CompletableFuture.allOf(
+            getActiveQuestRepository().remove(group),
+            getActiveTaskRepository().remove(group)
+        );
+    }
+
+    @Override
+    public CompletableFuture<Void> removeQuests(QuestPlayer player) {
+        final List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (ActiveQuest active : player.getActiveQuests()) {
+            futures.add(removeQuestsAndTasks(active));
+        }
+        return Futures.ofAll(futures);
+    }
+
+    @Override
+    public CompletableFuture<Void> removeQuests(QuestPlayer player, QuestGroup group) {
+        final List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (ActiveQuest active : player.getActiveQuests(group)) {
+            futures.add(removeQuestsAndTasks(active));
+        }
+        return Futures.ofAll(futures);
+    }
+
+    @Override
+    public CompletableFuture<Void> removeQuestsIfEnded(QuestPlayer player) {
+        final List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (ActiveQuest active : player.getActiveQuests()) {
+            if (active.hasEnded()) {
+                futures.add(removeQuestsAndTasks(active));
+            }
+        }
+        return Futures.ofAll(futures);
+    }
+
+    private CompletableFuture<Void> removeQuestsAndTasks(ActiveQuest quest) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        futures.add(getActiveQuestRepository().removeFromId(quest.getId()));
+        futures.addAll(quest.getTasks().stream().map(task -> getActiveTaskRepository().removeFromId(task.getId())).collect(Collectors.toList()));
+        return Futures.ofAll(futures);
     }
 }

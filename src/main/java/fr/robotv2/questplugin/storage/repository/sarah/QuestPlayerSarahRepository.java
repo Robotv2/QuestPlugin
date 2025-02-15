@@ -1,9 +1,7 @@
-package fr.robotv2.questplugin.storage.repository.sqlite;
+package fr.robotv2.questplugin.storage.repository.sarah;
 
 import fr.maxlego08.sarah.RequestHelper;
 import fr.maxlego08.sarah.database.Migration;
-import fr.maxlego08.sarah.logger.JULogger;
-import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.storage.dto.QuestPlayerDto;
 import fr.robotv2.questplugin.storage.repository.QuestPlayerRepository;
 
@@ -12,14 +10,16 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class QuestPlayerSqliteRepository implements QuestPlayerRepository {
+public class QuestPlayerSarahRepository implements QuestPlayerRepository {
 
     public static final String TABLE = "quest_player";
 
+    private final SarahDatabaseManager manager;
     private final RequestHelper helper;
 
-    public QuestPlayerSqliteRepository(SQLiteDatabaseManager manager) {
-        this.helper = new RequestHelper(manager.getConnection(), JULogger.from(QuestPlugin.logger()));
+    public QuestPlayerSarahRepository(SarahDatabaseManager manager, RequestHelper helper) {
+        this.manager = manager;
+        this.helper = helper;
     }
 
     @Override

@@ -87,17 +87,9 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, Di
         });
     }
 
-    public void removeActiveQuestByQuestId(String questId) {
-        this.activeQuests.removeIf((active) -> active.getQuestId().equals(questId));
-    }
-
     public void removeActiveQuest(QuestGroup group) {
         boolean result = this.activeQuests.removeIf(quest -> quest.getGroupId().equalsIgnoreCase(group.getGroupId()));
         if(result) setDirty(true);
-    }
-
-    public void removeActiveQuestByGroupId(String groupId) {
-        this.activeQuests.removeIf((active) -> active.getGroupId().equals(groupId));
     }
 
     public void clearActiveQuests() {

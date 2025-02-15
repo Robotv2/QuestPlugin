@@ -81,7 +81,6 @@ public abstract class AbstractCachedRepository<ID, T extends Identifiable<ID>> i
 
     @Override
     public void close() {
-
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         boolean isDirtyAware = DirtyAware.class.isAssignableFrom(getGenericTypeClass());
 

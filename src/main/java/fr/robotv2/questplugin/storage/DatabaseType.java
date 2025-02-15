@@ -3,6 +3,7 @@ package fr.robotv2.questplugin.storage;
 public enum DatabaseType {
 
     JSON,
+    SQLITE,
     ;
 
     public static DatabaseType getByLiteral(String name) {

@@ -8,10 +8,5 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public interface ActiveQuestRepository extends Repository<UUID, ActiveQuestDto> {
-
-    CompletableFuture<Void> remove(QuestPlayer questPlayer, QuestGroup group);
-
     CompletableFuture<Void> remove(QuestGroup group);
-
-    CompletableFuture<Void> removeIfEnded(QuestPlayer questPlayer);
 }

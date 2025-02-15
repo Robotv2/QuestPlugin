@@ -1,10 +1,13 @@
 package fr.robotv2.questplugin;
 
+import fr.maxlego08.sarah.DatabaseConfiguration;
+import fr.maxlego08.sarah.DatabaseConnection;
+import fr.maxlego08.sarah.SqliteConnection;
 import fr.robotv2.questplugin.addons.Addon;
 import fr.robotv2.questplugin.addons.AddonManager;
 import fr.robotv2.questplugin.command.QuestPluginMainCommand;
 import fr.robotv2.questplugin.conditions.ConditionManager;
-import fr.robotv2.questplugin.storage.InternalDatabaseManager;
+import fr.robotv2.questplugin.storage.DatabaseManager;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.group.QuestGroupManager;
 import fr.robotv2.questplugin.listeners.QuestIncrementListener;
@@ -12,6 +15,9 @@ import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.QuestManager;
 import fr.robotv2.questplugin.quest.context.block.BlockBreakListener;
 import fr.robotv2.questplugin.quest.context.block.BlockPlaceListener;
+import fr.robotv2.questplugin.storage.DatabaseType;
+import fr.robotv2.questplugin.storage.repository.json.JsonDatabaseManager;
+import fr.robotv2.questplugin.storage.repository.sarah.SarahDatabaseManager;
 import fr.robotv2.questplugin.util.Futures;
 import fr.robotv2.questplugin.util.GroupUtil;
 import fr.robotv2.questplugin.util.McVersion;
@@ -34,7 +40,7 @@ public final class QuestPlugin extends JavaPlugin {
 
     private QuestManager questManager;
     private QuestGroupManager questGroupManager;
-    private InternalDatabaseManager databaseManager;
+    private DatabaseManager databaseManager;
     private BukkitCommandHandler commandHandler;
 
     private QuestPluginConfiguration questConfiguration;
@@ -74,6 +80,7 @@ public final class QuestPlugin extends JavaPlugin {
         }
 
         this.conditionManager.closeRegistration();
+        this.addonManager.getAddons().forEach(Addon::onPreEnable);
 
         saveDefaultConfig();
         this.questConfiguration = new QuestPluginConfiguration();
@@ -82,9 +89,7 @@ public final class QuestPlugin extends JavaPlugin {
         this.questManager = new QuestManager(this, getRelativeFile("quests"));
         this.conditionManager = new ConditionManager(this);
 
-        if(this.databaseManager == null) {
-            databaseManager = new InternalDatabaseManager(this);
-        }
+        registerDatabaseManager();
 
         getQuestConfiguration().loadConfiguration(getConfig());
 
@@ -100,7 +105,7 @@ public final class QuestPlugin extends JavaPlugin {
 
         GroupUtil.initialize(this);
 
-        this.addonManager.getAddons().forEach(Addon::onEnable);
+        this.addonManager.getAddons().forEach(Addon::onPostEnable);
     }
 
     @Override
@@ -108,7 +113,7 @@ public final class QuestPlugin extends JavaPlugin {
         this.addonManager.getAddons().forEach(Addon::onDisable);
 
         final List<CompletableFuture<Void>> futures = Bukkit.getOnlinePlayers().stream()
-                .map((player) -> getDatabaseManager().savePlayerAndRemoveFromCache(player))
+                .map((player) -> getDatabaseManager().savePlayer(player, true))
                 .collect(Collectors.toList());
         Futures.ofAll(futures).join();
         if(getDatabaseManager() != null) {
@@ -142,12 +147,8 @@ public final class QuestPlugin extends JavaPlugin {
         return questGroupManager;
     }
 
-    public InternalDatabaseManager getDatabaseManager() {
+    public DatabaseManager getDatabaseManager() {
         return databaseManager;
-    }
-
-    public void setDatabaseManager(InternalDatabaseManager databaseManager) {
-        this.databaseManager = databaseManager;
     }
 
     public QuestPluginConfiguration getQuestConfiguration() {
@@ -180,6 +181,29 @@ public final class QuestPlugin extends JavaPlugin {
 
     public BukkitCommandHandler getCommandHandler() {
         return commandHandler;
+    }
+
+    private void registerDatabaseManager() {
+        final String literal = getConfig().getString("database.type", "JSON");
+        final DatabaseType type = DatabaseType.getByLiteral(literal);
+        if(type == null) {
+            throw new IllegalStateException("Unknown database type: " + literal);
+        }
+
+        switch (type) {
+            case JSON: {
+                this.databaseManager = new JsonDatabaseManager(this);
+                break;
+            }
+            case SQLITE: {
+                final DatabaseConfiguration configuration = DatabaseConfiguration.sqlite(true);
+                final DatabaseConnection connection = new SqliteConnection(configuration, getQuestDataFolder());
+                this.databaseManager = new SarahDatabaseManager(this, connection);
+                break;
+            }
+            default:
+                throw new IllegalStateException("Unknown database type: " + literal);
+        }
     }
 
     private void registerListeners() {

@@ -1,5 +1,6 @@
 package fr.robotv2.questplugin.storage;
 
+import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.storage.model.QuestPlayer;
 import fr.robotv2.questplugin.storage.repository.ActiveQuestRepository;
 import fr.robotv2.questplugin.storage.repository.ActiveTaskRepository;
@@ -29,8 +30,6 @@ public interface DatabaseManager {
 
     ActiveTaskRepository getActiveTaskRepository();
 
-    GlobalQuestRepository getGlobalQuestRepository();
-
     @Nullable
     QuestPlayer getCachedQuestPlayer(Player player);
 
@@ -39,4 +38,12 @@ public interface DatabaseManager {
 
     @UnmodifiableView
     Collection<QuestPlayer> getCachedPlayers();
+
+    CompletableFuture<Void> removeQuests(QuestGroup group);
+
+    CompletableFuture<Void> removeQuests(QuestPlayer group);
+
+    CompletableFuture<Void> removeQuests(QuestPlayer player, QuestGroup group);
+
+    CompletableFuture<Void> removeQuestsIfEnded(QuestPlayer player);
 }

@@ -126,10 +126,7 @@ public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends Abstr
 
     protected CompletableFuture<Void> removeIf(Predicate<T> predicate) {
         return selectAll().thenComposeAsync(list -> CompletableFuture.allOf(
-                list.stream()
-                        .filter(predicate)
-                        .map(this::remove)
-                        .toArray(CompletableFuture[]::new))
+                list.stream().filter(predicate).map(this::remove).toArray(CompletableFuture[]::new))
         );
     }
 

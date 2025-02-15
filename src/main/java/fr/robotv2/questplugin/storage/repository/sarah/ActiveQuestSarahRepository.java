@@ -1,39 +1,26 @@
-package fr.robotv2.questplugin.storage.repository.sqlite;
+package fr.robotv2.questplugin.storage.repository.sarah;
 
 import fr.maxlego08.sarah.RequestHelper;
 import fr.maxlego08.sarah.database.Migration;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.storage.dto.ActiveQuestDto;
-import fr.robotv2.questplugin.storage.model.ActiveQuest;
-import fr.robotv2.questplugin.storage.model.QuestPlayer;
 import fr.robotv2.questplugin.storage.repository.ActiveQuestRepository;
-import fr.robotv2.questplugin.util.Futures;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class ActiveQuestSqliteRepository implements ActiveQuestRepository {
+public class ActiveQuestSarahRepository implements ActiveQuestRepository {
 
     public static final String TABLE = "active_quest";
 
-    private final SQLiteDatabaseManager manager;
+    private final SarahDatabaseManager manager;
     private final RequestHelper helper;
 
-    public ActiveQuestSqliteRepository(SQLiteDatabaseManager manager, RequestHelper helper) {
+    public ActiveQuestSarahRepository(SarahDatabaseManager manager, RequestHelper helper) {
         this.manager = manager;
         this.helper = helper;
-    }
-
-    @Override
-    public CompletableFuture<Void> remove(QuestPlayer questPlayer, QuestGroup group) {
-        final List<CompletableFuture<Void>> futures = new ArrayList<>();
-        for(ActiveQuest active : questPlayer.getActiveQuests(group)) {
-            futures.add(remove(new ActiveQuestDto(active)));
-        }
-        return Futures.ofAll(futures);
     }
 
     @Override
@@ -46,55 +33,59 @@ public class ActiveQuestSqliteRepository implements ActiveQuestRepository {
     }
 
     @Override
-    public CompletableFuture<Void> removeIfEnded(QuestPlayer questPlayer) {
-        return CompletableFuture.runAsync(() -> {
-
+    public CompletableFuture<Optional<ActiveQuestDto>> select(UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            final List<ActiveQuestDto> dtos =  helper.select(TABLE, ActiveQuestDto.class, (table) -> {
+                table.uuid("id", uuid).primary();
+            });
+            return dtos.isEmpty() ? Optional.empty() : Optional.of(dtos.get(0));
         });
     }
 
     @Override
-    public CompletableFuture<Optional<ActiveQuestDto>> select(UUID uuid) {
-        return null;
-    }
-
-    @Override
     public CompletableFuture<List<ActiveQuestDto>> selectAll() {
-        return null;
+        return CompletableFuture.supplyAsync(() -> helper.selectAll(TABLE, ActiveQuestDto.class));
     }
 
     @Override
     public CompletableFuture<Void> insert(ActiveQuestDto value) {
-        return null;
+        return CompletableFuture.runAsync(() -> {
+            helper.insert(TABLE, ActiveQuestDto.class, value);
+        });
     }
 
     @Override
     public CompletableFuture<Void> update(UUID uuid, ActiveQuestDto value) {
-        return null;
+        return CompletableFuture.runAsync(() -> {
+            helper.update(TABLE, ActiveQuestDto.class, value);
+        });
     }
 
     @Override
     public CompletableFuture<Void> upsert(ActiveQuestDto value) {
-        return null;
+        return CompletableFuture.runAsync(() -> {
+            helper.upsert(TABLE, ActiveQuestDto.class, value);
+        });
     }
 
     @Override
     public CompletableFuture<Void> remove(ActiveQuestDto value) {
-        return null;
+        return removeFromId(value.getId());
     }
 
     @Override
     public CompletableFuture<Void> removeFromId(UUID uuid) {
-        return null;
+        return CompletableFuture.runAsync(() -> {
+            helper.delete(TABLE, (table) -> table.uuid("id", uuid));
+        });
     }
 
     @Override
     public void init() {
-
     }
 
     @Override
     public void close() {
-
     }
 
     public static class TableMigration extends Migration {

@@ -7,7 +7,6 @@ import java.io.File;
 import java.util.UUID;
 
 public class QuestPlayerJsonRepository extends GenericJsonRepository<UUID, QuestPlayerDto> implements QuestPlayerRepository {
-
     public QuestPlayerJsonRepository(File folder) {
         super(folder, QuestPlayerDto.class);
     }

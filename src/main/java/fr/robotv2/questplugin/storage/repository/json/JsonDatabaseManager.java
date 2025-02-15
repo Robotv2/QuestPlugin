@@ -14,14 +14,12 @@ public class JsonDatabaseManager extends AbstractDatabaseManager {
     private final QuestPlayerJsonRepository questPlayerJsonRepository;
     private final ActiveQuestJsonRepository activeQuestJsonRepository;
     private final ActiveTaskJsonRepository activeTaskJsonRepository;
-    private final GlobalQuestJsonRepository globalQuestJsonRepository;
 
     public JsonDatabaseManager(QuestPlugin plugin) {
         super(plugin);
         this.questPlayerJsonRepository = new QuestPlayerJsonRepository(new File(plugin.getQuestDataFolder(), "players"));
-        this.activeQuestJsonRepository = new ActiveQuestJsonRepository(this, new File(plugin.getQuestDataFolder(), "quests"));
+        this.activeQuestJsonRepository = new ActiveQuestJsonRepository(new File(plugin.getQuestDataFolder(), "quests"));
         this.activeTaskJsonRepository = new ActiveTaskJsonRepository(new File(plugin.getQuestDataFolder(), "tasks"));
-        this.globalQuestJsonRepository = new GlobalQuestJsonRepository(new File(plugin.getQuestDataFolder(), "global"));
     }
 
     @Override
@@ -37,10 +35,5 @@ public class JsonDatabaseManager extends AbstractDatabaseManager {
     @Override
     public ActiveTaskRepository getActiveTaskRepository() {
         return activeTaskJsonRepository;
-    }
-
-    @Override
-    public GlobalQuestRepository getGlobalQuestRepository() {
-        return globalQuestJsonRepository;
     }
 }

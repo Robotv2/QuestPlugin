@@ -1,7 +1,7 @@
 package fr.robotv2.questplugin.storage.loader.impl;
 
 import fr.robotv2.questplugin.QuestPlugin;
-import fr.robotv2.questplugin.storage.InternalDatabaseManager;
+import fr.robotv2.questplugin.storage.DatabaseManager;
 import fr.robotv2.questplugin.storage.loader.PlayerLoader;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,9 +14,9 @@ import java.util.logging.Level;
 
 public class MonoPlayerLoader implements PlayerLoader, Listener {
 
-    private final InternalDatabaseManager manager;
+    private final DatabaseManager manager;
 
-    public MonoPlayerLoader(InternalDatabaseManager manager) {
+    public MonoPlayerLoader(DatabaseManager manager) {
         this.manager = manager;
     }
 
@@ -32,10 +32,10 @@ public class MonoPlayerLoader implements PlayerLoader, Listener {
 
     @Override
     public CompletableFuture<Void> load(Player player) {
-        return manager.composePlayerAndCache(player)
-                .thenCompose((questPlayer) -> manager.getActiveQuestRepository().removeIfEnded(questPlayer).thenApply((ignored) -> questPlayer))
+        return manager.composePlayer(player, true)
+                .thenCompose((questPlayer) -> manager.removeQuestsIfEnded(questPlayer).thenApply((ignored) -> questPlayer))
                 .thenApply((questPlayer) -> {
-                    final int amount = manager.getPlugin().getResetHandler().fillPlayer(questPlayer);
+                    final int amount = QuestPlugin.instance().getResetHandler().fillPlayer(questPlayer);
                     if(amount != 0) QuestPlugin.debug(amount + " quest(s) has been given to the player '" + player.getName() + "'.");
                     return questPlayer;
                 })
@@ -50,7 +50,7 @@ public class MonoPlayerLoader implements PlayerLoader, Listener {
 
     @Override
     public CompletableFuture<Void> unload(Player player) {
-        return manager.savePlayerAndRemoveFromCache(player).thenRun(() -> {
+        return manager.savePlayer(player, true).thenRun(() -> {
             QuestPlugin.debug("Data of player " + player.getName() + " have been saved successfully.");
         }).exceptionally((throwable) -> {
             QuestPlugin.logger().log(Level.SEVERE, "An error occurred while saving data for player " + player.getName(), throwable);
