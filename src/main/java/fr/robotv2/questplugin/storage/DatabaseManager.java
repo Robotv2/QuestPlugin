@@ -8,6 +8,7 @@ import fr.robotv2.questplugin.storage.repository.ActiveQuestRepository;
 import fr.robotv2.questplugin.storage.repository.ActiveTaskRepository;
 import fr.robotv2.questplugin.storage.repository.QuestPlayerRepository;
 import fr.robotv2.questplugin.storage.repository.json.JsonDatabaseManager;
+import fr.robotv2.questplugin.storage.repository.mariadb.MariaDbDatabaseManager;
 import fr.robotv2.questplugin.storage.repository.sqlite.SqliteDatabaseManager;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +27,7 @@ public interface DatabaseManager {
     Map<String, Supplier<DatabaseManager>> SUPPLIERS = new HashMap<>() {{
         put("JSON", () -> new JsonDatabaseManager(QuestPlugin.instance()));
         put("SQLITE", () -> new SqliteDatabaseManager(QuestPlugin.instance()));
+        put("MARIADB", () -> new MariaDbDatabaseManager(QuestPlugin.instance()));
     }};
 
     void init();

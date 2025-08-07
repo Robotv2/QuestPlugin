@@ -2,6 +2,12 @@ debug: true
 
 database:
   type: JSON
+  mariadb:
+    host: "localhost"
+    port: 3306
+    database: "quest"
+    username: "user"
+    password: "password"
 
 cosmetics:
   task_increment:
