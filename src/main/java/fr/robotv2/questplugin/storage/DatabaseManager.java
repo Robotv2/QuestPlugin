@@ -7,6 +7,7 @@ import fr.robotv2.questplugin.storage.model.QuestPlayer;
 import fr.robotv2.questplugin.storage.repository.ActiveQuestRepository;
 import fr.robotv2.questplugin.storage.repository.ActiveTaskRepository;
 import fr.robotv2.questplugin.storage.repository.QuestPlayerRepository;
+import fr.robotv2.questplugin.storage.repository.hsql.HsqlDatabaseManager;
 import fr.robotv2.questplugin.storage.repository.json.JsonDatabaseManager;
 import fr.robotv2.questplugin.storage.repository.mariadb.MariaDbDatabaseManager;
 import fr.robotv2.questplugin.storage.repository.sqlite.SqliteDatabaseManager;
@@ -28,6 +29,7 @@ public interface DatabaseManager {
         put("JSON", () -> new JsonDatabaseManager(QuestPlugin.instance()));
         put("SQLITE", () -> new SqliteDatabaseManager(QuestPlugin.instance()));
         put("MARIADB", () -> new MariaDbDatabaseManager(QuestPlugin.instance()));
+        put("HSQL", () -> new HsqlDatabaseManager(QuestPlugin.instance()));
     }};
 
     void init();
