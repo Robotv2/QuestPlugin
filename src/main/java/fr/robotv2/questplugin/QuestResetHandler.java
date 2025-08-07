@@ -8,12 +8,10 @@ import fr.robotv2.questplugin.storage.model.QuestPlayer;
 import fr.robotv2.questplugin.util.GroupUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class QuestResetHandler {
 
@@ -40,7 +38,7 @@ public class QuestResetHandler {
             return;
         }
 
-        plugin.getDatabaseManager().getCachedPlayers().forEach((questPlayer) -> fillPlayer(questPlayer, group));
+        plugin.getDatabaseManager().getCachedPlayers().forEach((questPlayer) -> fillPlayer(questPlayer, group, true));
     }
 
     private int getRoleLimit(String role, QuestGroup group, int defaultValue) {
@@ -48,15 +46,15 @@ public class QuestResetHandler {
     }
 
     public int getPlayerLimit(QuestPlayer questPlayer, QuestGroup group) {
-        final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(questPlayer.getId());
+        final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(questPlayer.getUID());
         return getRoleLimit(GroupUtil.getPlayerPrimaryGroup(offlinePlayer), group, 0);
     }
 
-    public int fillPlayer(QuestPlayer questPlayer) {
+    public int fillPlayer(QuestPlayer questPlayer, boolean force) {
         int amount = 0;
 
         for(QuestGroup group : plugin.getQuestGroupManager().getGroups()) {
-            amount += fillPlayer(questPlayer, group);
+            amount += fillPlayer(questPlayer, group, force);
         }
 
         return amount;
@@ -66,7 +64,11 @@ public class QuestResetHandler {
      * Fill the player quest with all the missing quest in the reset service
      * @return the number of quest added
      */
-    public int fillPlayer(QuestPlayer questPlayer, QuestGroup group) {
+    public int fillPlayer(QuestPlayer questPlayer, QuestGroup group, boolean force) {
+        if(!group.getOption().getOptionValue(Optionnable.Option.AUTOMATICALLY_GIVEN) && !force) {
+            return 0; //If the group is not automatically given, we do not fill the player.
+        }
+
         final int required = getPlayerLimit(questPlayer, group);
         final int current = questPlayer.getActiveQuests(group).size();
 

@@ -1,13 +1,13 @@
 options:
-  global: false
+  repeatable: false
   dependant-tasks: false
   need-starting: false
   automatically-given: true
 
 automatic-reset: "0 0 * * *"
 
-global_assignation: 10
-
 assignations:
   default: 5
   vip: 10
+
+max-rerolls: 3

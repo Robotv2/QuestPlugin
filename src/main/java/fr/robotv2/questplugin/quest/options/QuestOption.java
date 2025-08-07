@@ -11,7 +11,6 @@ public class QuestOption implements Optionnable {
     private final Map<Option, Boolean> options = new EnumMap<>(Option.class);
 
     public QuestOption(final @Nullable ConfigurationSection section) {
-
         if(section == null) {
             return;
         }
@@ -19,10 +18,6 @@ public class QuestOption implements Optionnable {
         if(section.isBoolean("dependant-tasks")) {
             options.put(Option.DEPENDANT_TASK, section.getBoolean("dependant-tasks"));
         }
-
-//        if(section.isBoolean("global")) {
-//             options.put(Option.GLOBAL, section.getBoolean("global"));
-//        }
 
         if(section.isBoolean("automatically-given")) {
             options.put(Option.AUTOMATICALLY_GIVEN, section.getBoolean("automatically-given"));
@@ -44,6 +39,6 @@ public class QuestOption implements Optionnable {
 
     @Override
     public boolean getOptionValue(Option option) {
-        return isOptionSet(option) ? options.get(option) : DEFAULT.get(option);
+        return isOptionSet(option) ? options.get(option) : option.getDefaultValue();
     }
 }

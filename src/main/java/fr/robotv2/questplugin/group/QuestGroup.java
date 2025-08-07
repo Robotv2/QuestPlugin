@@ -1,19 +1,17 @@
 package fr.robotv2.questplugin.group;
 
 import fr.robotv2.questplugin.QuestPlugin;
+import fr.robotv2.questplugin.configurations.cosmetics.CosmeticMap;
+import fr.robotv2.questplugin.configurations.cosmetics.Cosmeticable;
 import fr.robotv2.questplugin.cron.CronJob;
 import fr.robotv2.questplugin.quest.options.QuestOption;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.OptionalInt;
+import java.util.*;
 
-public class QuestGroup {
+public class QuestGroup implements Cosmeticable {
 
     private final String groupId;
 
@@ -26,6 +24,10 @@ public class QuestGroup {
     private final int globalAssignation;
 
     private final Map<String, Integer> assignations;
+
+    private final CosmeticMap cosmetics;
+
+    private final int maxRerolls;
 
     public QuestGroup(final ConfigurationSection section) {
         this(section.getName(), section);
@@ -53,6 +55,9 @@ public class QuestGroup {
         } else {
             this.assignations = Collections.emptyMap();
         }
+
+        this.cosmetics = new CosmeticMap(section.getConfigurationSection("cosmetics"));
+        this.maxRerolls = section.getInt("max-rerolls", 0);
     }
 
 
@@ -92,21 +97,28 @@ public class QuestGroup {
         return assignations.containsKey(role.toLowerCase()) ? OptionalInt.of(assignations.get(role.toLowerCase())) : OptionalInt.empty();
     }
 
-
     public @UnmodifiableView Map<String, Integer> getRoleAssignations() {
         return Collections.unmodifiableMap(assignations);
+    }
+
+    public int getMaxRerolls() {
+        return maxRerolls;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof QuestGroup)) return false;
-        QuestGroup group = (QuestGroup) o;
+        if (!(o instanceof QuestGroup group)) return false;
         return Objects.equals(groupId, group.groupId);
     }
 
     @Override
     public int hashCode() {
         return Objects.hashCode(groupId);
+    }
+
+    @Override
+    public CosmeticMap getCosmeticMap() {
+        return cosmetics;
     }
 }

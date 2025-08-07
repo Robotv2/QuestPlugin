@@ -65,9 +65,5 @@ public abstract class PlaceholderSupport<E extends PlaceholderSupport<E>> {
     public E color() {
         return apply((text) -> QuestPlugin.instance().getColorProvider().colorize(text));
     }
-
-//    public E papi(OfflinePlayer offlinePlayer) {
-//        return apply(s -> SafePlaceholderAPI.parsePAPI(s, offlinePlayer));
-//    }
 }
 

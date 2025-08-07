@@ -1,40 +1,35 @@
 package fr.robotv2.questplugin;
 
-import fr.robotv2.questplugin.configurations.ActionBarTitlesSection;
+import fr.robotv2.questplugin.configurations.cosmetics.CosmeticMap;
+import fr.robotv2.questplugin.configurations.cosmetics.Cosmeticable;
+import fr.robotv2.questplugin.configurations.time.TimeFormatConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class QuestPluginConfiguration {
+public class QuestPluginConfiguration implements Cosmeticable {
 
     private boolean debug;
 
-    private Map<String, ActionBarTitlesSection> cosmetics;
+    private CosmeticMap cosmetics;
+
+    private TimeFormatConfiguration timeFormatConfiguration;
 
     public void loadConfiguration(@NotNull FileConfiguration configuration) {
         this.debug = configuration.getBoolean("debug");
-
-        this.cosmetics = new HashMap<>();
-        this.cosmetics.put("quest_increment", new ActionBarTitlesSection(configuration.getConfigurationSection("cosmetics.quest_increment")));
-        this.cosmetics.put("quest_done", new ActionBarTitlesSection(configuration.getConfigurationSection("cosmetics.quest_done")));
-        this.cosmetics.put("task_done", new ActionBarTitlesSection(configuration.getConfigurationSection("cosmetics.task_done")));
+        this.cosmetics = new CosmeticMap(configuration.getConfigurationSection("cosmetics"));
+        this.timeFormatConfiguration = new TimeFormatConfiguration(configuration.getConfigurationSection("time_format"));
     }
 
     public boolean isDebug() {
         return debug;
     }
 
-    public ActionBarTitlesSection getQuestIncrementCosmetics() {
-        return cosmetics.get("quest_increment");
+    public TimeFormatConfiguration getTimeFormatConfiguration() {
+        return timeFormatConfiguration;
     }
 
-    public ActionBarTitlesSection getQuestDoneCosmetics() {
-        return cosmetics.get("quest_done");
-    }
-
-    public ActionBarTitlesSection getTaskDoneCosmetics() {
-        return cosmetics.get("task_done");
+    @Override
+    public CosmeticMap getCosmeticMap() {
+        return cosmetics;
     }
 }

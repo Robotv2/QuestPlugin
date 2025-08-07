@@ -33,7 +33,6 @@ public class QuestGroupManager {
     }
 
     public void loadGroups() {
-
         groups.clear();
 
         if(!groupFolder.exists()) {
@@ -42,7 +41,6 @@ public class QuestGroupManager {
         }
 
         FileUtil.iterateFiles(groupFolder, (file) -> {
-
             if(!file.getName().endsWith(".yml")) {
                 return;
             }
@@ -64,7 +62,6 @@ public class QuestGroupManager {
     }
 
     private void setupDefaultGroups() {
-        QuestPlugin.instance()
-                .saveResource("groups" + File.separator + "daily.yml", false);
+        QuestPlugin.instance().saveResource("groups" + File.separator + "daily.yml", false);
     }
 }

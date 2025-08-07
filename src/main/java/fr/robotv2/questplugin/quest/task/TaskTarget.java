@@ -2,11 +2,9 @@ package fr.robotv2.questplugin.quest.task;
 
 public abstract class TaskTarget<T> {
 
-    private final Task task;
     private final Class<T> tClass;
 
-    public TaskTarget(Task task, Class<T> tClass) {
-        this.task = task;
+    public TaskTarget(Class<T> tClass) {
         this.tClass = tClass;
     }
 

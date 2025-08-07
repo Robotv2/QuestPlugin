@@ -2,8 +2,6 @@ package fr.robotv2.questplugin.addons;
 
 import fr.robotv2.questplugin.QuestPlugin;
 import io.github.classgraph.ClassGraph;
-import io.github.classgraph.Resource;
-import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
 
 import java.io.File;
@@ -49,9 +47,13 @@ public class AddonManager {
         }
 
         for(File file : files) {
+            if(!file.getName().endsWith(".jar")) {
+                continue;
+            }
 
             try {
-                final ScanResult result = getClassGraph(file).scan();
+                final ClassLoader loader = new URLClassLoader(new URL[]{file.toURI().toURL()}, plugin.getClass().getClassLoader());
+                final ScanResult result = getClassGraph(loader).scan();
 
                 // find addon class
                 final List<Class<Addon>> addonClasses = result.getSubclasses(Addon.class.getName()).loadClasses(Addon.class);
@@ -67,9 +69,10 @@ public class AddonManager {
 
                 final Class<? extends Addon> addonClass = addonClasses.get(0);
                 final Addon addon = addonClass.newInstance();
+                addon.setLoader(loader);
+
                 addons.add(addon);
                 QuestPlugin.logger().info("Addon " + addon.getName() + " (" + addon.getVersion() + ") has been loaded successfully.");
-
                 result.close();
 
             } catch (IOException | InstantiationException | IllegalAccessException exception) {
@@ -78,11 +81,7 @@ public class AddonManager {
         }
     }
 
-    private ClassGraph getClassGraph(File file) throws IOException {
-        return new ClassGraph()
-                .overrideClassLoaders(new URLClassLoader(new URL[]{file.toURI().toURL()}, plugin.getClass().getClassLoader()))
-                .acceptPackages("fr.robotv2")
-                .enableAllInfo()
-                ;
+    private ClassGraph getClassGraph(ClassLoader loader) throws IOException {
+        return new ClassGraph().overrideClassLoaders(loader).enableAllInfo();
     }
 }

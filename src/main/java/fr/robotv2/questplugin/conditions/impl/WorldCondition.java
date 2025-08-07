@@ -9,17 +9,10 @@ import java.util.Set;
 
 public class WorldCondition implements Condition {
 
-    private final String key;
     private final Set<String> worlds;
 
     public WorldCondition(String key, ConfigurationSection parent) {
-        this.key = key;
         this.worlds = new HashSet<>(parent.getStringList(key));
-    }
-
-    @Override
-    public String getKey() {
-        return key;
     }
 
     @Override

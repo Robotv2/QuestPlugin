@@ -2,6 +2,8 @@ package fr.robotv2.questplugin.quest;
 
 import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.conditions.Condition;
+import fr.robotv2.questplugin.configurations.cosmetics.CosmeticMap;
+import fr.robotv2.questplugin.configurations.cosmetics.Cosmeticable;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.quest.options.Optionnable;
 import fr.robotv2.questplugin.quest.options.QuestOption;
@@ -15,7 +17,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Quest implements Optionnable {
+public class Quest implements Optionnable, Cosmeticable {
 
     private final QuestPlugin plugin;
 
@@ -33,18 +35,23 @@ public class Quest implements Optionnable {
 
     private final Set<Condition> conditions = new HashSet<>();
 
+    private final CosmeticMap cosmetics;
+
+    private final List<String> rewards;
+
     public Quest(QuestPlugin plugin, ConfigurationSection section) {
         this(plugin, section.getName(), section);
     }
 
     public Quest(QuestPlugin plugin, String questId, ConfigurationSection section) {
-
         this.plugin = plugin;
         this.questId = questId;
         this.questSection = section;
         this.questName = section.getString("name");
         this.questGroup = Objects.requireNonNull(plugin.getQuestGroupManager().getGroup(section.getString("group")));
         this.options = new QuestOption(section.getConfigurationSection("options"));
+        this.cosmetics = new CosmeticMap(section.getConfigurationSection("cosmetics"));
+        this.rewards = section.getStringList("rewards");
 
         registerTasks(section.getConfigurationSection("tasks"));
         registerConditions(section.getConfigurationSection("conditions"));
@@ -67,7 +74,7 @@ public class Quest implements Optionnable {
     }
 
     public Set<Condition> getConditions() {
-        return conditions;
+        return Collections.unmodifiableSet(conditions);
     }
 
     @UnmodifiableView
@@ -102,8 +109,17 @@ public class Quest implements Optionnable {
         } else if (getQuestGroup().getOption().isOptionSet(option)) {
             return getQuestGroup().getOption().getOptionValue(option);
         } else {
-            return Optionnable.DEFAULT.get(option);
+            return option.getDefaultValue();
         }
+    }
+
+    @Override
+    public CosmeticMap getCosmeticMap() {
+        return cosmetics;
+    }
+
+    public List<String> getRewards() {
+        return rewards;
     }
 
     private void registerTasks(ConfigurationSection tasksSection) {

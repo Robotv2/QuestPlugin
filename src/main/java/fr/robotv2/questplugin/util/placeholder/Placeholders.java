@@ -28,7 +28,6 @@ public class Placeholders {
         return QUEST_PLACEHOLDER.apply(text, value.getParent())
                 .replace("%task_id%", String.valueOf(value.getTaskId()))
                 .replace("%task_type%", value.getType().getLiteral())
-                .replace("%task_required%", value.getRequiredAmount().toString())
         ;
     };
 
@@ -41,17 +40,17 @@ public class Placeholders {
                 .replace("%quest_done%", String.valueOf(value.isDone()))
                 .replace("%quest_tasks_completed%", String.valueOf(value.getTasks().stream().filter(ActiveTask::isDone).count()))
                 .replace("%quest_reset_timestamp%", String.valueOf(value.getNextReset()))
+                .replace("%quest_reset_time%", QuestPlugin.instance().getQuestConfiguration().getTimeFormatConfiguration().format(value.getNextReset() - System.currentTimeMillis()))
                 ;
     };
 
     public static ValuePlaceholder<ActiveTask> ACTIVE_TASK_PLACEHOLDER = (text, value) -> {
         if(text == null || text.isEmpty() || value == null) return text;
-        final Task task = Optional.ofNullable(QuestPlugin.instance().getQuestManager().fromId(value.getParentQuestId(), value.getParentQuestGroupId()))
-                .map((quest) -> quest.getTask(value.getTaskId()))
-                .orElse(null);
+        final Task task = value.getTask();
         return TASK_PLACEHOLDER.apply(text, task)
                 .replace("%task_progress%", value.getProgress().toString())
                 .replace("%task_done%", String.valueOf(value.isDone()))
+                .replace("%task_required%", value.getRequired().toString())
                 ;
     };
 }

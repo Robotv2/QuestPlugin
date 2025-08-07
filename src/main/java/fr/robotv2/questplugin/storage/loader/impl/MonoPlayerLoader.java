@@ -32,15 +32,17 @@ public class MonoPlayerLoader implements PlayerLoader, Listener {
 
     @Override
     public CompletableFuture<Void> load(Player player) {
+        final long now = System.currentTimeMillis();
         return manager.composePlayer(player, true)
                 .thenCompose((questPlayer) -> manager.removeQuestsIfEnded(questPlayer).thenApply((ignored) -> questPlayer))
                 .thenApply((questPlayer) -> {
-                    final int amount = QuestPlugin.instance().getResetHandler().fillPlayer(questPlayer);
+                    final int amount = QuestPlugin.instance().getResetHandler().fillPlayer(questPlayer, false);
                     if(amount != 0) QuestPlugin.debug(amount + " quest(s) has been given to the player '" + player.getName() + "'.");
                     return questPlayer;
                 })
                 .thenRun(() -> {
                     QuestPlugin.debug("Data of player " + player.getName() + " have been loaded successfully.");
+                    QuestPlugin.logger().info("Data of player " + player.getName() + " have been loaded in " + (System.currentTimeMillis() - now) + "ms.");
                 })
                 .exceptionally(throwable -> {
                     QuestPlugin.logger().log(Level.SEVERE, "An error occurred while loading data for player " + player.getName(), throwable);
@@ -50,8 +52,10 @@ public class MonoPlayerLoader implements PlayerLoader, Listener {
 
     @Override
     public CompletableFuture<Void> unload(Player player) {
+        final long now = System.currentTimeMillis();
         return manager.savePlayer(player, true).thenRun(() -> {
             QuestPlugin.debug("Data of player " + player.getName() + " have been saved successfully.");
+            QuestPlugin.logger().info("Data of player " + player.getName() + " have been saved in " + (System.currentTimeMillis() - now) + "ms.");
         }).exceptionally((throwable) -> {
             QuestPlugin.logger().log(Level.SEVERE, "An error occurred while saving data for player " + player.getName(), throwable);
             return null;

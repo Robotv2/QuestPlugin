@@ -11,7 +11,6 @@ public class GroupUtil {
     private static boolean initialized = false;
 
     public static boolean initialize(JavaPlugin plugin) {
-
         if(initialized) {
             return true;
         }
@@ -27,7 +26,17 @@ public class GroupUtil {
     }
 
     public static String getPlayerPrimaryGroup(OfflinePlayer offlinePlayer) {
-        return initialized ? PERMISSION.getPrimaryGroup(null, offlinePlayer) : "default";
-    }
+        if(!initialized) {
+            return "default";
+        }
 
+        try {
+            return PERMISSION.getPrimaryGroup(null, offlinePlayer);
+        } catch (UnsupportedOperationException exception) {
+
+            // this is a fallback for plugins that don't support the getPrimaryGroup method
+
+            return "default";
+        }
+    }
 }

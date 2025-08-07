@@ -12,7 +12,7 @@ public class LocationTaskTarget extends TaskTarget<Location> {
     private final double distanceFromLocation;
 
     public LocationTaskTarget(Task task) {
-        super(task, Location.class);
+        super(Location.class);
 
         final String world = task.getTaskSection().getString("required_location.world");
         final double x = task.getTaskSection().getDouble("required_location.x");

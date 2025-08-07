@@ -27,9 +27,9 @@ public abstract class AbstractCachedRepository<ID, T extends Identifiable<ID>> i
             return CompletableFuture.completedFuture(Optional.of(cachedValue));
         }
 
-        return selectFromDataSource(id).thenApply(optionalValue -> {
-            optionalValue.ifPresent(value -> cache.put(id, value));
-            return optionalValue;
+        return selectFromDataSource(id).thenApply((optional) -> {
+            optional.ifPresent((value) -> cache.put(id, value));
+            return optional;
         });
     }
 
@@ -41,7 +41,7 @@ public abstract class AbstractCachedRepository<ID, T extends Identifiable<ID>> i
         }
 
         return selectAllFromDataSource().thenApply(values -> {
-            values.forEach(value -> cache.put(value.getId(), value));
+            values.forEach(value -> cache.put(value.getUID(), value));
             this.fullyLoaded = true;
             return values;
         });
@@ -49,7 +49,7 @@ public abstract class AbstractCachedRepository<ID, T extends Identifiable<ID>> i
 
     @Override
     public CompletableFuture<Void> insert(T value) {
-        return insertIntoDataSource(value).thenRun(() -> cache.put(value.getId(), value));
+        return insertIntoDataSource(value).thenRun(() -> cache.put(value.getUID(), value));
     }
 
     @Override
@@ -59,12 +59,12 @@ public abstract class AbstractCachedRepository<ID, T extends Identifiable<ID>> i
 
     @Override
     public CompletableFuture<Void> upsert(T value) {
-        return upsertInDataSource(value).thenRun(() -> cache.put(value.getId(), value));
+        return upsertInDataSource(value).thenRun(() -> cache.put(value.getUID(), value));
     }
 
     @Override
     public CompletableFuture<Void> remove(T value) {
-        return removeFromDataSource(value).thenRun(() -> cache.remove(value.getId()));
+        return removeFromDataSource(value).thenRun(() -> cache.remove(value.getUID()));
     }
 
     @Override

@@ -1,38 +1,42 @@
 package fr.robotv2.questplugin;
 
-import fr.maxlego08.sarah.DatabaseConfiguration;
-import fr.maxlego08.sarah.DatabaseConnection;
-import fr.maxlego08.sarah.SqliteConnection;
 import fr.robotv2.questplugin.addons.Addon;
 import fr.robotv2.questplugin.addons.AddonManager;
 import fr.robotv2.questplugin.command.QuestPluginMainCommand;
 import fr.robotv2.questplugin.conditions.ConditionManager;
-import fr.robotv2.questplugin.storage.DatabaseManager;
 import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.group.QuestGroupManager;
-import fr.robotv2.questplugin.listeners.QuestIncrementListener;
+import fr.robotv2.questplugin.listeners.QuestCosmeticListener;
+import fr.robotv2.questplugin.listeners.StatisticListeners;
 import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.QuestManager;
-import fr.robotv2.questplugin.quest.context.block.BlockBreakListener;
-import fr.robotv2.questplugin.quest.context.block.BlockPlaceListener;
-import fr.robotv2.questplugin.storage.DatabaseType;
-import fr.robotv2.questplugin.storage.repository.json.JsonDatabaseManager;
-import fr.robotv2.questplugin.storage.repository.sarah.SarahDatabaseManager;
+import fr.robotv2.questplugin.quest.type.QuestTypes;
+import fr.robotv2.questplugin.storage.DatabaseManager;
+import fr.robotv2.questplugin.storage.model.ActiveQuest;
+import fr.robotv2.questplugin.storage.model.QuestPlayer;
 import fr.robotv2.questplugin.util.Futures;
 import fr.robotv2.questplugin.util.GroupUtil;
 import fr.robotv2.questplugin.util.McVersion;
 import fr.robotv2.questplugin.util.color.ColorProvider;
 import fr.robotv2.questplugin.util.color.LegacyColorProvider;
 import fr.robotv2.questplugin.util.color.ModernColorProvider;
+import net.byteflux.libby.BukkitLibraryManager;
+import net.byteflux.libby.LibraryManager;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import revxrsal.commands.autocomplete.SuggestionProvider;
+import revxrsal.commands.bukkit.BukkitCommandActor;
 import revxrsal.commands.bukkit.BukkitCommandHandler;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -49,6 +53,7 @@ public final class QuestPlugin extends JavaPlugin {
     private AddonManager addonManager;
 
     private ColorProvider colorProvider;
+    private LibraryManager libraryManager;
 
     public static QuestPlugin instance() {
         return JavaPlugin.getPlugin(QuestPlugin.class);
@@ -62,6 +67,10 @@ public final class QuestPlugin extends JavaPlugin {
         instance().dbg(message);
     }
 
+    public static LibraryManager libraryManager() {
+        return instance().libraryManager;
+    }
+
     @Override
     public void onLoad() {
         this.addonManager = new AddonManager(this, getRelativeFile("addons"));
@@ -70,11 +79,14 @@ public final class QuestPlugin extends JavaPlugin {
 
         this.conditionManager = new ConditionManager(this);
         this.conditionManager.registerDefaultConditions();
+
+        this.libraryManager = new BukkitLibraryManager(this, "data" + File.separator + "libraries");
+        this.libraryManager.addMavenCentral();
+        this.libraryManager.addJitPack();
     }
 
     @Override
     public void onEnable() {
-
         if(!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
@@ -84,14 +96,13 @@ public final class QuestPlugin extends JavaPlugin {
 
         saveDefaultConfig();
         this.questConfiguration = new QuestPluginConfiguration();
+        getQuestConfiguration().loadConfiguration(getConfig());
 
         this.questGroupManager = new QuestGroupManager(getRelativeFile("groups"));
         this.questManager = new QuestManager(this, getRelativeFile("quests"));
         this.conditionManager = new ConditionManager(this);
 
         registerDatabaseManager();
-
-        getQuestConfiguration().loadConfiguration(getConfig());
 
         getQuestGroupManager().loadGroups();
         getQuestManager().loadQuests();
@@ -110,19 +121,26 @@ public final class QuestPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        this.addonManager.getAddons().forEach(Addon::onDisable);
 
-        final List<CompletableFuture<Void>> futures = Bukkit.getOnlinePlayers().stream()
-                .map((player) -> getDatabaseManager().savePlayer(player, true))
+        // disable addons
+        getAddonManager().getAddons().forEach(Addon::onDisable);
+
+        // save all players
+        List<CompletableFuture<Void>> futures = Bukkit.getOnlinePlayers()
+                .stream()
+                .map(player -> getDatabaseManager().savePlayer(player, true))
                 .collect(Collectors.toList());
+
+        // Wait for them to complete before closing the pool
         Futures.ofAll(futures).join();
+
+        // Close the database
         if(getDatabaseManager() != null) {
             getDatabaseManager().close();
         }
     }
 
     public void onReload() {
-
         reloadConfig();
         getQuestConfiguration().loadConfiguration(getConfig());
 
@@ -130,7 +148,7 @@ public final class QuestPlugin extends JavaPlugin {
         getQuestGroupManager().loadGroups();
         getQuestManager().loadQuests();
 
-        this.addonManager.getAddons().forEach(Addon::onReload);
+        getAddonManager().getAddons().forEach(Addon::onReload);
     }
 
     public void dbg(String message) {
@@ -185,34 +203,27 @@ public final class QuestPlugin extends JavaPlugin {
 
     private void registerDatabaseManager() {
         final String literal = getConfig().getString("database.type", "JSON");
-        final DatabaseType type = DatabaseType.getByLiteral(literal);
-        if(type == null) {
-            throw new IllegalStateException("Unknown database type: " + literal);
+        final Supplier<DatabaseManager> supplier = DatabaseManager.SUPPLIERS.get(literal.toUpperCase());
+        if(supplier == null) {
+            throw new IllegalArgumentException("Invalid database type: " + literal);
         }
 
-        switch (type) {
-            case JSON: {
-                this.databaseManager = new JsonDatabaseManager(this);
-                break;
-            }
-            case SQLITE: {
-                final DatabaseConfiguration configuration = DatabaseConfiguration.sqlite(true);
-                final DatabaseConnection connection = new SqliteConnection(configuration, getQuestDataFolder());
-                this.databaseManager = new SarahDatabaseManager(this, connection);
-                break;
-            }
-            default:
-                throw new IllegalStateException("Unknown database type: " + literal);
-        }
+        this.databaseManager = supplier.get();
     }
 
     private void registerListeners() {
         final PluginManager pm = getServer().getPluginManager();
 
-        pm.registerEvents(new QuestIncrementListener(this), this);
+        pm.registerEvents(new QuestCosmeticListener(this), this);
+        pm.registerEvents(new StatisticListeners(), this);
 
-        pm.registerEvents(new BlockBreakListener(this), this);
-        pm.registerEvents(new BlockPlaceListener(this), this);
+        QuestTypes.getLoadedTypes().forEach((type) -> {
+            try {
+                type.registerListener();
+            } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException exception) {
+                getLogger().log(Level.SEVERE, "Failed to register listener for " + type.getLiteral(), exception);
+            }
+        });
     }
 
     private void registerCommands() {
@@ -226,6 +237,7 @@ public final class QuestPlugin extends JavaPlugin {
             final QuestGroup group = context.getResolvedArgument(QuestGroup.class);
             return getQuestManager().fromId(context.pop(), group.getGroupId());
         });
+
         commandHandler.getAutoCompleter().registerSuggestion("quests", (args, sender, command) -> {
             final String filter = args.size() > 1 ? args.get(args.size() - 2) : "";
             return getQuestManager().getQuests().stream()
@@ -233,6 +245,18 @@ public final class QuestPlugin extends JavaPlugin {
                     .map(Quest::getQuestId)
                     .collect(Collectors.toSet());
         });
+
+        commandHandler.getAutoCompleter().registerSuggestion("target_quests", (args, sender, command) -> {
+            final String filter = args.size() > 1 ? args.get(args.size() - 2) : "";
+            Player player = Bukkit.getPlayer(filter);
+            if(player == null) player = sender.as(BukkitCommandActor.class).requirePlayer();
+            final QuestPlayer questPlayer = getDatabaseManager().getCachedQuestPlayer(player);
+            if(questPlayer == null) return Collections.emptySet();
+            return questPlayer.getActiveQuests().stream()
+                    .map(ActiveQuest::getQuestId)
+                    .collect(Collectors.toSet());
+        });
+
         commandHandler.getAutoCompleter().registerParameterSuggestions(Quest.class, "quests");
 
         commandHandler.register(new QuestPluginMainCommand(this));

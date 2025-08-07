@@ -4,7 +4,7 @@ database:
   type: JSON
 
 cosmetics:
-  quest_increment:
+  task_increment:
     action_bar:
       enabled: true
       message: "&e%quest_name% &8| &e%task_progress%/%task_required%"
@@ -12,6 +12,14 @@ cosmetics:
       enabled: false
       title: ""
       subtitle: ""
+  task_done:
+    action_bar:
+      enabled: true
+      message: "&a%quest_name% &8| &e&lCOMPLETED"
+    titles:
+      enabled: true
+      title: "&aTask completed !"
+      subtitle: "&aYou have just finished a task for the quest: %quest_name%"
   quest_done:
     action_bar:
       enabled: false
@@ -20,3 +28,10 @@ cosmetics:
       enabled: true
       title: "&aCongratulations !"
       subtitle: "&aYou have just finished the quest: %quest_name%"
+
+time_format:
+  days: "d"
+  hours: "h"
+  minutes: "m"
+  seconds: "s"
+  format: "%days%%hours%%minutes%%seconds%"

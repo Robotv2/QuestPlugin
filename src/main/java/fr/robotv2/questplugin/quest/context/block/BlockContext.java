@@ -5,12 +5,12 @@ import fr.robotv2.questplugin.quest.context.RunningQuestContext;
 import fr.robotv2.questplugin.quest.type.QuestType;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockEvent;
+import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class BlockContext<E extends BlockEvent> extends RunningQuestContext<XMaterial, E> {
+public class BlockContext<E extends Event> extends RunningQuestContext<XMaterial, E> {
 
     private final Block block;
 

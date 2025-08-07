@@ -5,35 +5,35 @@ import fr.robotv2.questplugin.group.QuestGroup;
 import fr.robotv2.questplugin.storage.dto.ActiveQuestDto;
 import fr.robotv2.questplugin.storage.dto.ActiveTaskDto;
 import fr.robotv2.questplugin.storage.dto.QuestPlayerDto;
+import fr.robotv2.questplugin.storage.loader.impl.MonoPlayerLoader;
 import fr.robotv2.questplugin.storage.model.ActiveQuest;
 import fr.robotv2.questplugin.storage.model.ActiveTask;
 import fr.robotv2.questplugin.storage.model.QuestPlayer;
 import fr.robotv2.questplugin.util.Futures;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDatabaseManager implements DatabaseManager {
 
-    private final QuestPlugin plugin;
+    protected final QuestPlugin plugin;
     private final Map<UUID, QuestPlayer> cache;
+    private final Map<UUID, ReentrantLock> locks;
 
     public AbstractDatabaseManager(QuestPlugin plugin) {
         this.plugin = plugin;
         this.cache = new ConcurrentHashMap<>();
+        this.locks = new ConcurrentHashMap<>();
+        Bukkit.getPluginManager().registerEvents(new MonoPlayerLoader(this), plugin);
     }
 
     @NotNull
@@ -60,31 +60,54 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
         getActiveTaskRepository().close();
     }
 
+    public ReentrantLock getLock(UUID playerId) {
+        return locks.computeIfAbsent(playerId, (id) -> new ReentrantLock());
+    }
+
     @Override
     public CompletableFuture<Void> savePlayer(Player player, boolean removeFromCache) {
-        final QuestPlayer questPlayer = Objects.requireNonNull(getCachedQuestPlayer(player.getUniqueId()), "Quest player not found");
+        final UUID playerId = player.getUniqueId();
+        final Lock lock = getLock(playerId);
 
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        futures.add(getQuestPlayerRepository().upsert(new QuestPlayerDto(questPlayer)));
+        return CompletableFuture.runAsync(() -> {
+            lock.lock();
+            try {
+                final QuestPlayer questPlayer = cache.get(playerId);
+                if (questPlayer == null) return;
 
-        for (ActiveQuest quest : questPlayer.getActiveQuests()) {
-            futures.add(getActiveQuestRepository().upsert(new ActiveQuestDto(quest)));
-            for (ActiveTask task : quest.getTasks()) {
-                futures.add(getActiveTaskRepository().upsert(new ActiveTaskDto(task)));
+                List<CompletableFuture<Void>> futures = new ArrayList<>();
+                futures.add(getQuestPlayerRepository().upsert(new QuestPlayerDto(questPlayer)));
+                for (ActiveQuest quest : questPlayer.getActiveQuests()) {
+                    futures.add(getActiveQuestRepository().upsert(new ActiveQuestDto(quest)));
+                    for (ActiveTask task : quest.getTasks()) {
+                        futures.add(getActiveTaskRepository().upsert(new ActiveTaskDto(task)));
+                    }
+                }
+
+                Futures.ofAll(futures).join();
+
+            } finally {
+                lock.unlock(); // Release lock
             }
-        }
-
-        return Futures.ofAll(futures).thenRun(() -> {
-            if(removeFromCache) {
-                cache.remove(player.getUniqueId());
-            }
+        }).thenRun(() -> {
+            if (removeFromCache) cache.remove(playerId);
+            locks.remove(playerId);
             plugin.getLogger().info("Data of player '" + player.getName() + "' saved successfully.");
         });
     }
 
     @Override
     public CompletableFuture<QuestPlayer> composePlayer(Player player, boolean shouldCache) {
-        return fetchCompletedQuestPlayer(player).thenApply(questPlayer -> {
+        final UUID playerId = player.getUniqueId();
+        final Lock lock = getLock(playerId);
+        return CompletableFuture.supplyAsync(() -> {
+            lock.lock(); // Acquire lock
+            try {
+                return populateQuestPlayer(player);
+            } finally {
+                lock.unlock();
+            }
+        }).thenCompose((future) -> future).thenApply((questPlayer) -> {
             if (shouldCache) {
                 cache.put(player.getUniqueId(), questPlayer);
             }
@@ -92,40 +115,36 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
         });
     }
 
-    private CompletableFuture<QuestPlayer> fetchCompletedQuestPlayer(Player player) {
-        return getQuestPlayerRepository().select(player.getUniqueId()).thenCompose(optional -> {
-            if (!optional.isPresent()) {
-                return CompletableFuture.completedFuture(new QuestPlayer(player));
-            }
-
-            QuestPlayerDto dto = optional.get();
-            List<CompletableFuture<ActiveQuest>> futures = dto.getActiveQuests().stream().map(this::fetchCompletedActiveQuest).collect(Collectors.toList());
-
-            return Futures.ofAll(futures).thenApply(ignored -> {
-                Set<ActiveQuest> activeQuests = futures.stream().map(CompletableFuture::join).collect(Collectors.toSet());
-                return new QuestPlayer(dto, activeQuests);
-            });
-        });
+    private CompletableFuture<QuestPlayer> populateQuestPlayer(Player player) {
+        return fetchQuestPlayer(player).thenCompose(this::fetchAndPopulateActiveQuests);
     }
 
-    private CompletableFuture<ActiveQuest> fetchCompletedActiveQuest(UUID activeQuestId) {
-        return getActiveQuestRepository().select(activeQuestId).thenCompose(optional -> {
-            if (!optional.isPresent()) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            ActiveQuestDto dto = optional.get();
-            List<CompletableFuture<ActiveTask>> futures = dto.getActiveTasks().stream().map(this::fetchCompletedActiveTask).collect(Collectors.toList());
-
-            return Futures.ofAll(futures).thenApply(ignored -> {
-                Set<ActiveTask> tasks = futures.stream().map(CompletableFuture::join).collect(Collectors.toSet());
-                return new ActiveQuest(dto, tasks);
-            });
-        });
+    private CompletableFuture<QuestPlayer> fetchQuestPlayer(Player player) {
+        return getQuestPlayerRepository()
+                .select(player.getUniqueId())
+                .thenApply(optional -> optional.map(QuestPlayer::new).orElse(new QuestPlayer(player)));
     }
 
-    private CompletableFuture<ActiveTask> fetchCompletedActiveTask(UUID activeTaskId) {
-        return getActiveTaskRepository().select(activeTaskId).thenApply(optional -> optional.map(ActiveTask::new).orElse(null));
+    private CompletableFuture<QuestPlayer> fetchAndPopulateActiveQuests(QuestPlayer questPlayer) {
+        if (questPlayer == null) return CompletableFuture.completedFuture(null);
+        return getActiveQuestRepository().fetchByPlayer(questPlayer.getUID()).thenCompose((dtos) -> populateActiveQuests(questPlayer, dtos));
+    }
+
+    private CompletableFuture<QuestPlayer> populateActiveQuests(QuestPlayer questPlayer, Collection<ActiveQuestDto> activeQuestDtos) {
+        if (activeQuestDtos.isEmpty()) {
+            return CompletableFuture.completedFuture(questPlayer);
+        }
+
+        final Set<UUID> activeQuestIds = activeQuestDtos.stream().map(ActiveQuestDto::getUID).collect(Collectors.toSet());
+        return getActiveTaskRepository().bulkFetchByActiveQuest(activeQuestIds)
+                .thenApply((taskMap) -> {
+                    for (ActiveQuestDto dto : activeQuestDtos) {
+                        final List<ActiveTask> tasks = taskMap.get(dto.getUID()).stream().map(ActiveTask::new).toList();
+                        final ActiveQuest activeQuest = new ActiveQuest(dto, tasks);
+                        questPlayer.addActiveQuest(activeQuest);
+                    }
+                    return questPlayer;
+                });
     }
 
     @Nullable
@@ -156,6 +175,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
         final List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (ActiveQuest active : player.getActiveQuests()) {
             futures.add(removeQuestsAndTasks(active));
+            player.removeActiveQuestById(active.getQuestId());
         }
         return Futures.ofAll(futures);
     }
@@ -165,6 +185,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
         final List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (ActiveQuest active : player.getActiveQuests(group)) {
             futures.add(removeQuestsAndTasks(active));
+            player.removeActiveQuestById(active.getQuestId());
         }
         return Futures.ofAll(futures);
     }
@@ -172,18 +193,27 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
     @Override
     public CompletableFuture<Void> removeQuestsIfEnded(QuestPlayer player) {
         final List<CompletableFuture<Void>> futures = new ArrayList<>();
+        final List<String> ended = new ArrayList<>();
+
         for (ActiveQuest active : player.getActiveQuests()) {
             if (active.hasEnded()) {
                 futures.add(removeQuestsAndTasks(active));
+                ended.add(active.getQuestId());
             }
         }
+
+        for(String questId : ended) {
+            player.removeActiveQuestById(questId);
+        }
+
         return Futures.ofAll(futures);
     }
 
-    private CompletableFuture<Void> removeQuestsAndTasks(ActiveQuest quest) {
+    @Override
+    public CompletableFuture<Void> removeQuestsAndTasks(ActiveQuest quest) {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        futures.add(getActiveQuestRepository().removeFromId(quest.getId()));
-        futures.addAll(quest.getTasks().stream().map(task -> getActiveTaskRepository().removeFromId(task.getId())).collect(Collectors.toList()));
+        futures.add(getActiveQuestRepository().removeFromId(quest.getUID()));
+        futures.addAll(quest.getTasks().stream().map(task -> getActiveTaskRepository().removeFromId(task.getUID())).toList());
         return Futures.ofAll(futures);
     }
 }

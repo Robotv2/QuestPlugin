@@ -15,6 +15,7 @@ public abstract class Addon {
 
     private FileConfiguration config = null;
     private File configFile = null;
+    private ClassLoader loader;
 
     public void onLoad() {}
 
@@ -44,6 +45,14 @@ public abstract class Addon {
 
     public File getConfigFile() {
         return new File(getFolder(), getConfigFileName());
+    }
+
+    public ClassLoader getLoader() {
+        return loader;
+    }
+
+    public void setLoader(ClassLoader loader) {
+        this.loader = loader;
     }
 
     public void saveDefaultConfig() {

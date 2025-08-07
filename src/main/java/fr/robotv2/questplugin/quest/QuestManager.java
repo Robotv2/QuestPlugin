@@ -45,12 +45,11 @@ public class QuestManager {
 
     @UnmodifiableView
     public List<Quest> getQuests(QuestGroup group) {
-        return Collections.unmodifiableList(new ArrayList<>(quests.column(group.getGroupId()).values()));
+        return List.copyOf(quests.column(group.getGroupId()).values());
     }
 
     @Nullable
     public Quest getRandomQuest(QuestGroup group) {
-
         final List<Quest> quests = this.getQuests(group);
         final int size = quests.size();
 

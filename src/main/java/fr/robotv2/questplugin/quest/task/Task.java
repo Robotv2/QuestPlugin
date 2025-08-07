@@ -1,26 +1,27 @@
 package fr.robotv2.questplugin.quest.task;
 
 import fr.robotv2.questplugin.conditions.Condition;
+import fr.robotv2.questplugin.configurations.cosmetics.CosmeticMap;
+import fr.robotv2.questplugin.configurations.cosmetics.Cosmeticable;
 import fr.robotv2.questplugin.quest.Quest;
 import fr.robotv2.questplugin.quest.type.QuestType;
+import fr.robotv2.questplugin.quest.type.QuestTypes;
+import fr.robotv2.questplugin.util.Range;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
-public class Task {
+public class Task implements Cosmeticable {
 
     private final Quest parent;
     private final int id;
     private final ConfigurationSection section;
 
     private final QuestType<?> type;
-    private final BigDecimal requiredAmount;
+    private final Range requiredAmount;
     private final List<String> rewards;
     private final Set<Condition> conditions;
+    private final CosmeticMap cosmetics;
 
     private final TaskTarget<?> target;
 
@@ -28,11 +29,12 @@ public class Task {
         this.parent = quest;
         this.id = Integer.parseInt(section.getName());
         this.section = section;
-        this.type = Objects.requireNonNull(QuestType.getByLiteral(section.getString("task_type")), "Invalid task type.");
-        this.requiredAmount = this.type.isNumerical() ? BigDecimal.valueOf(section.getDouble("required_amount")) : BigDecimal.ONE;
+        this.type = Objects.requireNonNull(QuestTypes.getByLiteral(section.getString("task_type")), "Invalid task type.");
+        this.requiredAmount = this.type.isNumerical() ? new Range(section.getString("required_amount", "1")) : new Range(1);
         this.rewards = section.getStringList("task_rewards");
         this.conditions = new HashSet<>();
         this.target = TaskTargets.resolve(this);
+        this.cosmetics = new CosmeticMap(section.getConfigurationSection("cosmetics"));
 
         registerConditions(section.getConfigurationSection("conditions"));
     }
@@ -49,7 +51,7 @@ public class Task {
         return section;
     }
 
-    public BigDecimal getRequiredAmount() {
+    public Range getRequiredAmount() {
         return requiredAmount;
     }
 
@@ -70,7 +72,12 @@ public class Task {
     }
 
     public Set<Condition> getConditions() {
-        return conditions;
+        return Collections.unmodifiableSet(conditions);
+    }
+
+    @Override
+    public CosmeticMap getCosmeticMap() {
+        return cosmetics;
     }
 
     private void registerConditions(ConfigurationSection conditionsSection) {

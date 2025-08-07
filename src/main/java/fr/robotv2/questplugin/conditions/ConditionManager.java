@@ -2,6 +2,7 @@ package fr.robotv2.questplugin.conditions;
 
 import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.conditions.impl.WorldCondition;
+import fr.robotv2.questplugin.conditions.impl.entity.SheepColorCondition;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.lang.reflect.Constructor;
@@ -60,6 +61,7 @@ public class ConditionManager {
     public void registerDefaultConditions() {
 
         registerCondition("required_worlds", WorldCondition.class);
+        registerCondition("sheep_color", SheepColorCondition.class);
 
     }
 

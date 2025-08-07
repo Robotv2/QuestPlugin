@@ -4,8 +4,8 @@ import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.storage.AbstractDatabaseManager;
 import fr.robotv2.questplugin.storage.repository.ActiveQuestRepository;
 import fr.robotv2.questplugin.storage.repository.ActiveTaskRepository;
-import fr.robotv2.questplugin.storage.repository.GlobalQuestRepository;
 import fr.robotv2.questplugin.storage.repository.QuestPlayerRepository;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -23,17 +23,17 @@ public class JsonDatabaseManager extends AbstractDatabaseManager {
     }
 
     @Override
-    public QuestPlayerRepository getQuestPlayerRepository() {
+    public @NotNull QuestPlayerRepository getQuestPlayerRepository() {
         return questPlayerJsonRepository;
     }
 
     @Override
-    public ActiveQuestRepository getActiveQuestRepository() {
+    public @NotNull ActiveQuestRepository getActiveQuestRepository() {
         return activeQuestJsonRepository;
     }
 
     @Override
-    public ActiveTaskRepository getActiveTaskRepository() {
+    public @NotNull ActiveTaskRepository getActiveTaskRepository() {
         return activeTaskJsonRepository;
     }
 }

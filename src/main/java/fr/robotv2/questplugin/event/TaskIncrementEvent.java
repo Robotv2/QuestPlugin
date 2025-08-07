@@ -8,13 +8,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
-public class QuestIncrementEvent extends QuestEvent implements Cancellable {
+public class TaskIncrementEvent extends TaskEvent implements Cancellable {
 
     private final static HandlerList HANDLER_LIST = new HandlerList();
 
     private final Player player;
-
-    private final Task task;
 
     private final ActiveQuest activeQuest;
 
@@ -22,20 +20,15 @@ public class QuestIncrementEvent extends QuestEvent implements Cancellable {
 
     private boolean cancel = false;
 
-    public QuestIncrementEvent(Quest quest, Task task, ActiveQuest activeQuest, ActiveTask activeTask, Player player) {
-        super(quest);
+    public TaskIncrementEvent(Quest quest, Task task, ActiveQuest activeQuest, ActiveTask activeTask, Player player) {
+        super(quest, task, activeTask);
         this.player = player;
-        this.task = task;
         this.activeQuest = activeQuest;
         this.activeTask = activeTask;
     }
 
     public Player getPlayer() {
         return player;
-    }
-
-    public Task getTask() {
-        return task;
     }
 
     public ActiveQuest getActiveQuest() {

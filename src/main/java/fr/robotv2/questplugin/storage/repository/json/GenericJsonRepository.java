@@ -1,16 +1,13 @@
 package fr.robotv2.questplugin.storage.repository.json;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import fr.robotv2.questplugin.QuestPlugin;
 import fr.robotv2.questplugin.storage.Identifiable;
 import fr.robotv2.questplugin.storage.repository.AbstractCachedRepository;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,13 +18,23 @@ import java.util.function.Predicate;
 
 public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends AbstractCachedRepository<ID, T> {
 
+    public static final Gson GSON;
+
+    static {
+        final GsonBuilder builder = new GsonBuilder();
+        builder.excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC);
+        builder.setPrettyPrinting();
+        builder.serializeNulls();
+        builder.enableComplexMapKeySerialization();
+        GSON = builder.create();
+    }
+
     private final Map<ID, File> fileCache = new ConcurrentHashMap<>();
 
     private final File folder;
     private final Class<T> tClass;
 
     public GenericJsonRepository(File folder, Class<T> tClass) {
-
         if (!folder.exists()) {
             folder.mkdirs();
         }
@@ -52,24 +59,19 @@ public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends Abstr
     @Override
     public CompletableFuture<List<T>> selectAllFromDataSource() {
         return CompletableFuture.supplyAsync(() -> {
-
             final List<T> allValues = new ArrayList<>();
             final File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
-
             if (files == null) {
                 return allValues;
             }
 
             for (File file : files) {
                 try {
-
                     final T value = fromFile(file, tClass);
-
                     if (value != null) {
                         allValues.add(value);
-                        fileCache.put(value.getId(), file);
+                        fileCache.put(value.getUID(), file);
                     }
-
                 } catch (IOException exception) {
                     throw new RuntimeException("Failed to load data from file " + file.getAbsolutePath(), exception);
                 }
@@ -83,9 +85,9 @@ public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends Abstr
     public CompletableFuture<Void> insertIntoDataSource(T value) {
         return CompletableFuture.runAsync(() -> {
             try {
-                writeToFile(getFileFor(value.getId()), value);
+                writeToFile(getFileFor(value.getUID()), value);
             } catch (IOException exception) {
-                throw new RuntimeException("Failed to insert value with id " + value.getId(), exception);
+                throw new RuntimeException("Failed to insert value with id " + value.getUID(), exception);
             }
         });
     }
@@ -102,7 +104,7 @@ public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends Abstr
 
     @Override
     public CompletableFuture<Void> removeFromDataSource(T value) {
-        return removeFromId(value.getId());
+        return removeFromId(value.getUID());
     }
 
     @Override
@@ -136,13 +138,13 @@ public class GenericJsonRepository<ID, T extends Identifiable<ID>> extends Abstr
 
     private T fromFile(File file, Class<T> tClass) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            return GsonHolder.GSON.fromJson(reader, tClass);
+            return GSON.fromJson(reader, tClass);
         }
     }
 
     private void writeToFile(File file, T value) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            GsonHolder.GSON.toJson(value, writer);
+            GSON.toJson(value, writer);
         }
     }
 }

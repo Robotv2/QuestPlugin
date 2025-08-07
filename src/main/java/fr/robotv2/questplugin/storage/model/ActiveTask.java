@@ -6,91 +6,61 @@ import fr.robotv2.questplugin.quest.task.Task;
 import fr.robotv2.questplugin.storage.DirtyAware;
 import fr.robotv2.questplugin.storage.Identifiable;
 import fr.robotv2.questplugin.storage.dto.ActiveTaskDto;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 public class ActiveTask implements java.io.Serializable, Identifiable<UUID>, DirtyAware {
 
-    /**
-     * Representing the unique identifier for this specific task
-     */
-    private UUID activeTaskUniqueId;
+    // CONSTANTS
+    private final UUID activeTaskUniqueId;
 
-    /**
-     * Representing the id of the parent quest of this task
-     */
-    private String parentQuestId;
+    private final UUID parentActiveQuestId;
 
-    /**
-     * Representing the id the group of the parent quest of this task
-     */
-    private String parentQuestGroupId;
+    private final String parentQuestId;
 
-    /**
-     * Representing the id of the task
-     */
-    private int taskId;
+    private final String parentQuestGroupId;
 
-    /**
-     * Representing the progress of the task
-     */
+    private final int taskId;
+
+    private final BigDecimal required;
+
+    // VARIABLES
     private BigDecimal progress;
 
-    /**
-     * Representing the required progress to finish this task
-     */
-    private BigDecimal required;
-
-    /**
-     * Representing whether the quest has been done or not
-     */
     private boolean done;
 
-    /**
-     * Representing whether the task need saving
-     */
     private transient boolean dirty;
 
-    public ActiveTask(Quest quest, Task task) {
-        this(
-                UUID.randomUUID(),
-                quest.getQuestId(),
-                quest.getQuestGroup().getGroupId(),
-                task.getTaskId(),
-                BigDecimal.valueOf(0),
-                task.getRequiredAmount(),
-                false
-        );
+    public ActiveTask(Quest quest, UUID parentActiveQuestId, Task task) {
+        this.activeTaskUniqueId = UUID.randomUUID();
+        this.parentActiveQuestId = parentActiveQuestId;
+        this.parentQuestId = quest.getQuestId();
+        this.parentQuestGroupId = quest.getQuestGroup().getGroupId();
+        this.taskId = task.getTaskId();
+        this.required = BigDecimal.valueOf(task.getRequiredAmount().randomInt());
+        this.progress = BigDecimal.valueOf(0);
+        this.done = false;
     }
 
-    @ApiStatus.Internal
     public ActiveTask(ActiveTaskDto dto) {
-        this(
-                dto.getId(),
-                dto.getParentQuestId(),
-                dto.getParentQuestGroupId(),
-                dto.getTaskId(),
-                dto.getProgress(),
-                dto.getRequired(),
-                dto.isDone()
-        );
-    }
-
-    public ActiveTask(UUID activeTaskUniqueId, String parentQuestId, String parentQuestGroupId, int taskId, BigDecimal progress, BigDecimal required, boolean done) {
-        this.activeTaskUniqueId = activeTaskUniqueId;
-        this.parentQuestId = parentQuestId;
-        this.parentQuestGroupId = parentQuestGroupId;
-        this.taskId = taskId;
-        this.progress = progress;
-        this.required = required;
-        this.done = done;
+        this.activeTaskUniqueId = dto.getUID();
+        this.parentActiveQuestId = dto.getParentActiveQuestId();
+        this.parentQuestId = dto.getParentQuestId();
+        this.parentQuestGroupId = dto.getParentQuestGroupId();
+        this.taskId = dto.getTaskId();
+        this.progress = dto.getProgress();
+        this.required = dto.getRequired();
+        this.done = dto.isDone();
     }
 
     @Override
-    public UUID getId() {
+    public UUID getUID() {
         return activeTaskUniqueId;
+    }
+
+    public UUID getParentActiveQuestId() {
+        return parentActiveQuestId;
     }
 
     public String getParentQuestId() {
@@ -133,6 +103,7 @@ public class ActiveTask implements java.io.Serializable, Identifiable<UUID>, Dir
 
     public void setDone(boolean done) {
         this.done = done;
+        setDirty(true);
     }
 
     @Override

@@ -7,5 +7,4 @@ public interface MultiServerLoader extends PlayerLoader {
     boolean canBeLoaded(UUID playerId);
 
     void setCanBeLoaded(UUID playerId, boolean value);
-
 }

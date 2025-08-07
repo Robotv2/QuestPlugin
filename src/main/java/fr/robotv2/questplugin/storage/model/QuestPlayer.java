@@ -7,8 +7,6 @@ import fr.robotv2.questplugin.storage.Identifiable;
 import fr.robotv2.questplugin.storage.dto.QuestPlayerDto;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.*;
@@ -16,34 +14,32 @@ import java.util.stream.Collectors;
 
 public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, DirtyAware {
 
-    private UUID playerUniqueId;
+    private final UUID playerUniqueId;
 
-    private String playerName;
+    private final String playerName;
 
-    private Set<ActiveQuest> activeQuests;
+    private final Set<ActiveQuest> activeQuests;
 
-    private Map<String, Integer> questDone;
+    private final Map<String, Integer> questDone;
 
     private transient boolean dirty;
 
     public QuestPlayer(Player player) {
-        this(player.getUniqueId(), player.getName(), new HashSet<>(), new HashMap<>());
+        this.playerUniqueId = player.getUniqueId();
+        this.playerName = player.getName();
+        this.activeQuests = new HashSet<>();
+        this.questDone = new HashMap<>();
     }
 
-    @ApiStatus.Internal
-    public QuestPlayer(QuestPlayerDto dto, Set<ActiveQuest> quests) {
-        this(dto.getId(), dto.getPlayerName(), quests, dto.getQuestDone());
-    }
-
-    public QuestPlayer(UUID uniqueId, String playerName, Set<ActiveQuest> quests, Map<String, Integer> questDone) {
-        this.playerUniqueId = uniqueId;
-        this.playerName = playerName;
-        this.activeQuests = quests;
-        this.questDone = questDone;
+    public QuestPlayer(QuestPlayerDto dto) {
+        this.playerUniqueId = dto.getUID();
+        this.playerName = dto.getPlayerName();
+        this.activeQuests = new HashSet<>();
+        this.questDone = new HashMap<>(dto.getQuestDone());
     }
 
     @Override
-    public UUID getId() {
+    public UUID getUID() {
         return playerUniqueId;
     }
 
@@ -52,7 +48,7 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, Di
     }
 
     public Player getPlayer() {
-        return Bukkit.getPlayer(getId());
+        return Bukkit.getPlayer(getUID());
     }
 
     public Set<ActiveQuest> getActiveQuests() {
@@ -71,6 +67,16 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, Di
         return getActiveQuests(group.getGroupId());
     }
 
+    public ActiveQuest getActiveQuest(Quest quest) {
+        return getActiveQuest(quest.getQuestId());
+    }
+
+    public ActiveQuest getActiveQuest(String questId) {
+        return getActiveQuests().stream()
+                .filter(active -> active.getQuestId().equalsIgnoreCase(questId))
+                .findFirst().orElse(null);
+    }
+
     public void addActiveQuests(Collection<ActiveQuest> activeQuests) {
         this.activeQuests.addAll(activeQuests);
         setDirty(true);
@@ -81,14 +87,22 @@ public class QuestPlayer implements java.io.Serializable, Identifiable<UUID>, Di
         setDirty(true);
     }
 
+    public void removeActiveQuest(ActiveQuest activeQuest) {
+        removeActiveQuestById(activeQuest.getQuestId());
+        setDirty(true);
+    }
+
     public void removeActiveQuest(Quest quest) {
-        this.activeQuests.removeIf((active) -> {
-            return active.getQuestId().equals(quest.getQuestId());
-        });
+        removeActiveQuestById(quest.getQuestId());
+    }
+
+    public void removeActiveQuestById(String questId) {
+        boolean result = this.activeQuests.removeIf((active) -> active.getQuestId().equals(questId));
+        if(result) setDirty(true);
     }
 
     public void removeActiveQuest(QuestGroup group) {
-        boolean result = this.activeQuests.removeIf(quest -> quest.getGroupId().equalsIgnoreCase(group.getGroupId()));
+        boolean result = this.activeQuests.removeIf((quest) -> quest.getGroupId().equalsIgnoreCase(group.getGroupId()));
         if(result) setDirty(true);
     }
 

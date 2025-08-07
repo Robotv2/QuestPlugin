@@ -1,6 +1,7 @@
-package fr.robotv2.questplugin.configurations;
+package fr.robotv2.questplugin.configurations.cosmetics.impl;
 
 import com.cryptomorin.xseries.messages.Titles;
+import fr.robotv2.questplugin.configurations.cosmetics.PlayerSendable;
 import fr.robotv2.questplugin.util.placeholder.PlaceholderSupport;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -22,6 +23,8 @@ public class TitlesSection extends PlaceholderSupport<TitlesSection> implements 
     private final int stay;
     private final int fadeOut;
 
+    private final boolean empty;
+
     public TitlesSection(@Nullable ConfigurationSection section) {
         if(section == null) {
             this.enabled = false;
@@ -30,6 +33,7 @@ public class TitlesSection extends PlaceholderSupport<TitlesSection> implements 
             this.fadeIn = 0;
             this.stay = 0;
             this.fadeOut = 0;
+            this.empty = true;
         } else {
             this.enabled = section.getBoolean("enabled");
             this.title = section.getString("title");
@@ -37,21 +41,27 @@ public class TitlesSection extends PlaceholderSupport<TitlesSection> implements 
             this.fadeIn = section.getInt("fade-in", 10);
             this.stay = section.getInt("stay", 20);
             this.fadeOut = section.getInt("fade-out", 10);
+            this.empty = false;
         }
     }
 
     @ApiStatus.Internal
-    protected TitlesSection(boolean enabled, @Nullable String title, @Nullable String subtitle, int fadeIn, int stay, int fadeOut) {
+    protected TitlesSection(boolean enabled, @Nullable String title, @Nullable String subtitle, int fadeIn, int stay, int fadeOut, boolean empty) {
         this.enabled = enabled;
         this.title = title;
         this.subtitle = subtitle;
         this.fadeIn = fadeIn;
         this.stay = stay;
         this.fadeOut = fadeOut;
+        this.empty = empty;
     }
 
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public boolean isEmpty() {
+        return empty;
     }
 
     public String getTitle() {
@@ -93,7 +103,8 @@ public class TitlesSection extends PlaceholderSupport<TitlesSection> implements 
                 subtitle != null ? replaceFunction.apply(subtitle) : null,
                 fadeIn,
                 stay,
-                fadeOut
+                fadeOut,
+                empty
         );
     }
 }
