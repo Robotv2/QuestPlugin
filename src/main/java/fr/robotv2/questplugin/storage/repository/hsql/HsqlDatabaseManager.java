@@ -41,7 +41,7 @@ public class HsqlDatabaseManager extends AbstractDatabaseManager {
         try {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl("jdbc:hsqldb:file:" + file.getAbsolutePath());
-            config.setDriverClassName("org.hsqldb.jdbc.JDBCDriver");
+            config.setDriverClassName("org{}hsqldb{}jdbc{}JDBCDriver".replace("{}", "."));
             config.setUsername("SA");
             config.setPassword("");
             config.setMaximumPoolSize(10);
